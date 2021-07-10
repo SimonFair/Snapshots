@@ -54,7 +54,8 @@ rm -f $(ls &packages;/*.txz 2>/dev/null | grep -v '&version;')
 </INLINE>
 </FILE>
 
-
+<FILE Run="/bin/bash">
+<INLINE>
 
 echo 
 echo "-----------------------------------------------------------"
