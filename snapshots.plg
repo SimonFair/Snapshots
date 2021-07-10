@@ -1,0 +1,88 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!DOCTYPE PLUGIN [
+<!ENTITY name      "snapshots">
+<!ENTITY author    "SimonFair">
+<!ENTITY version   "2021.07.10">
+<!ENTITY launch    "snapshots">
+<!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
+<!ENTITY pluginURL "&gitURL;/usb_manager.plg">
+<!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
+<!ENTITY packages	"/boot/config/plugins/&name;/packages">
+<!ENTITY md5		"bec41b0fee311306cdbedb2d74e5c5a6">
+]>
+
+<PLUGIN name="&name;"
+		author="&author;"
+		launch="&launch;"
+		version="&version;"
+		pluginURL="&pluginURL;"
+		support="&supportURL;"
+		icon="fa-usb"
+		min="6.8.0">
+
+<CHANGES>
+##Snapshots
+###&version;
+
+  - Initial Dev Release.
+
+</CHANGES>
+
+<!--
+The 'pre-install' script.
+-->
+#
+
+<!--
+Get the plugin bundle.
+-->
+<FILE Name="&packages;/&name;-&version;.txz" Run="upgradepkg --install-new &packages;/&name;*%&packages;/&name;-&version;.txz">
+<URL>"&gitURL;/&name;-&version;.txz"</URL>
+<MD5>&md5;</MD5>
+</FILE>
+
+<!--
+The 'post-updgrade' script.
+-->
+<FILE Run="/bin/bash">
+<INLINE>
+echo "Removing previous versons now upgrade has completed."
+echo
+# Remove old 'bundle' files.
+rm -f $(ls &packages;/*.txz 2>/dev/null | grep -v '&version;')
+</INLINE>
+</FILE>
+
+
+
+echo 
+echo "-----------------------------------------------------------"
+echo " &name; has been installed."
+echo " "
+echo " Copyright 2016-2020, &author;"
+echo " Version: &version;"
+echo ""
+echo "-----------------------------------------------------------"
+echo 
+</INLINE>
+</FILE>
+
+<!--
+The 'remove' script.
+-->
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+
+
+
+echo 
+echo "-----------------------------------------------------------"
+echo " &name; has been uninstalled."
+echo "-----------------------------------------------------------"
+echo 
+
+</INLINE>
+</FILE>
+
+</PLUGIN>

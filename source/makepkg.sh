@@ -1,5 +1,5 @@
 #!/bin/bash
-PLUGIN_NAME="usb_manager"
+PLUGIN_NAME="snapshots"
 BASE_DIR="/usr/local/emhttp/plugins"
 TMP_DIR="/tmp/${PLUGIN_NAME}_"$(echo $RANDOM)""
 VERSION="$(date +'%Y.%m.%d')"
