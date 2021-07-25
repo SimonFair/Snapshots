@@ -269,9 +269,10 @@ function availtgt() {
 
 function build_volume($line) {
          		#if (preg_match('/^.+: ID (?P<id>\S+)(?P<name>.*)$/', $strUSBDevice, $arrMatch)) {
-					 global $btrfs_uuid, $btrfs_path, $btrfs_volumes ;
+					 global $btrfs_uuid, $btrfs_path, $btrfs_volumes , $btrfs_line;
 					 $volume="" ;
-             exec('btrfs subvolume list  -uqcga '.$line,$vol);
+             #exec('btrfs subvolume list  -uqcga '.$line,$vol);
+			 exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
 			 $btrfs_path = NULL ;
 
 	foreach ($vol as $vline) {
@@ -309,15 +310,95 @@ function build_volume($line) {
 	foreach ($btrfs_volumes[$line] as $key=>$vline) {
 		$paths=NULL ;
 		foreach ($btrfs_path as $pathkey=>$path) {
-				if ($path["puuid"] == $vline["uuid"])   {
+				#if ($path["puuid"] == $vline["uuid"])   {
 				  $paths[] = $pathkey ;
-				  #echo "<tr><td>" ; var_dump($pathkey ) ; echo "</td></tr>" ;
-				}	
+				  
+				#  #echo "<tr><td>" ; var_dump($pathkey ) ; echo "</td></tr>" ;
+				#}	
 		}	
 		
 		ksort($paths, SORT_NATURAL) ;
 		$btrfs_volumes[$line][$key]["snapshots"] = $paths ; 
 	}	 	
-	ksort($btrfs_volumes,SORT_NATURAL );
+}
+
+
+
+function build_list($lines) {
+	$btrfs_list = NULL ;
+	foreach ($lines as $line) {
+		if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
+		
+		$vol=NULL ;
+		#exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
+		exec('btrfs subvolume list  -puqcgaR '.$line,$vol);
+		$btrfs_path = NULL ;
+
+		foreach ($vol as $vline) {
+
+
+			#echo "<tr><td>" ;echo preg_match('/^ID parent_uuid (?P<puuid>\S+) uuid (?P<uuid>\S+): path (?P<path>\S+)(?P<name>.*)$/', $vline, $arrMatch) ; echo "</td></tr>" ;
+			if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
+  
+  		 		#echo "<tr><td>" ;var_dump($arrMatch) ;echo "</td></tr>" ;
+
+  				$btrfs_list[$line][$arrMatch["path"]] = [		
+		   		'uuid' =>$arrMatch['uuid'],
+		   		'puuid' =>$arrMatch['puuid'],
+				'ruuid' => $arrMatch['ruuid'],
+				'snap' => false,
+				'vol' => $line,
+  				];
+
+			# Get ro status
+			$ro=null ;
+			exec('btrfs property get  '.$line.'/'.$arrMatch["path"],$ro);
+			foreach ($ro as $roline) {
+			$rosplit=explode("=", $roline)	 ;
+			$btrfs_list[$line][$arrMatch["path"]]["property"][$rosplit[0]] = $rosplit[1] ;
+			}
+			}
+		}
+
+# Process Snapshots
+#
+			$vol=NULL ;
+			exec('btrfs subvolume list  -spuqcgaR '.$line,$vol);
+			$btrfs_path = NULL ;
+	
+			foreach ($vol as $vline) {
+	
+	
+				#echo "<tr><td>" ;echo preg_match('/^ID parent_uuid (?P<puuid>\S+) uuid (?P<uuid>\S+): path (?P<path>\S+)(?P<name>.*)$/', $vline, $arrMatch) ; echo "</td></tr>" ;
+				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} otime (?P<odate>\S+) (?P<otime>\S+) parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
+	  
+					   #echo "<tr><td>" ;var_dump($arrMatch) ;echo "</td></tr>" ;
+	
+					  $btrfs_list[$line][$arrMatch["path"]] = [		
+					   'uuid' =>$arrMatch['uuid'],
+					   'puuid' =>$arrMatch['puuid'],
+					   'ruuid' => $arrMatch['ruuid'],
+					   'snap' => true,
+					'odate' => 	$arrMatch['odate'],
+					'otime' => $arrMatch['otime'],
+					'vol' => $line,
+					  ];
+
+			# Get ro status
+			$ro=null ;
+			exec('btrfs property get  '.$line.'/'.$arrMatch["path"],$ro);
+			foreach ($ro as $roline) {
+			$rosplit=explode("=", $roline)	 ;
+			$btrfs_list[$line][$arrMatch["path"]]["property"][$rosplit[0]] = $rosplit[1] ;
+			}
+				  
+				}
+		}
+	}
+
+	 
+	
+ksort($btrfs_list,SORT_NATURAL ) ;
+return($btrfs_list) ;
 
 }

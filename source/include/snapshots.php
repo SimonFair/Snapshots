@@ -46,7 +46,7 @@ function make_button($text) {
 
 $unraid = parse_plugin_cfg("dynamix",true);
 $display = $unraid["display"];
-#global $btrfs_path, $btrfs_uuid ;
+global $btrfs_path, $btrfs_line ;
 switch ($_POST['table']) {
 // sv = BTRFS Volumes Tab Tables  
 // it = Initiator Tab Tables
@@ -55,29 +55,38 @@ switch ($_POST['table']) {
 // lt = LUN Tab Tables 
 // xt = Diag Tables
 case 'sv1':
-    exec(' df -t btrfs --output="target" ',$targetcli);
-    foreach ($targetcli as $line) {
-            if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
-             echo "<tr><td> Volume:".preg_replace('/\]  +/',']</td><td>Test</td><td>',$line)."</td></td><td><td>".make_button("Create Subvolume")."</td></td><td></tr>";
-             
-             
-        
-             build_volume($line) ;
-            # echo "<tr><td>" ;var_dump( $btrfs_volumes) ;echo "</td></tr>" ;
-             
-             
-             foreach ($btrfs_volumes[$line] as $key=>$vline) {
-             # echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',$vline)."</td></tr>";
-              echo "<tr><td>       Subvolume: ".$key."</td><td></td><td>".make_button("Delete Subvolume")." ".make_button("Create Snapshot").' Read Only:<input type="checkbox" value=""></td></tr>';
-              foreach ($btrfs_volumes[$line][$key]["snapshots"] as $snapshot) {
-             
-                   echo "<tr><td>          Snapshot: ".$snapshot."</td><td></td><td>".make_button("Delete Snapshot")."</td><td></td></tr>"; }
-             }
-            # echo "<tr><td>" ;
-            # var_dump($volume) ;
-            # echo "</td></tr>" ;
-             #if ($volume == "" ) {echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',"No Volumes")."</td></tr>";}
-       }
-  break;
+        #exec(' cat /mnt/cache/appdata/snapcmd/dflist ',$targetcli);
+        exec(' df -t btrfs --output="target" ',$targetcli);
+            $list=build_list($targetcli) ;
+                # echo "<tr><td>" ;var_dump( $btrfs_volumes) ;echo "</td></tr>" ;
 
+                foreach ($list as $key=>$vline) {
+                  echo "<tr><td> Volume:".preg_replace('/\]  +/',']</td><td>Test</td><td>',$key)."</td></td><td><td>".make_button("Create Subvolume")."</td></td><td></tr>";
+             
+                  foreach ($vline as $snap=>$snapdetail) {
+                  # echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',$vline)."</td></tr>";
+               if ($snapdetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
+               if ($snapdetail["snap"] == false) {
+                  echo "<tr><td>       Subvolume: ".$snap.'</td><td>  Read Only:<input type="checkbox" '.$checked.' value="">'."</td><td>".make_button("Delete Subvolume")." ".make_button("Create Snapshot").'</td></tr>';
+               } else {
+                  echo "<tr><td>          Snapshot: ".$snap.'</td><td>  Read Only:<input type="checkbox"'.$checked.' value="">'."</td><td>".make_button("Delete Snapshot").'</td></tr>'; 
+               }
+     
+              }}
+       #echo "<tr><td>" ;
+       #var_dump($btrfs_paths) ;
+       #echo "</td></tr>" ;
+       break;
+
+       case 'db1':
+        
+       # exec(' cat /mnt/cache/appdata/snapcmd/dflist ',$targetcli);
+        exec(' df -t btrfs --output="target" ',$targetcli);
+            $list=build_list($targetcli) ;
+      
+           echo "<tr><td>" ;
+           var_dump($list) ;
+           echo "</td></tr>" ;
+           break;
+    
 }

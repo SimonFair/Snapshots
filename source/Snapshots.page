@@ -1,0 +1,5 @@
+Menu="SystemInformation"
+Title="Snapshots"
+Icon="fa-file"
+Type="xmenu"
+Tabs="true"
