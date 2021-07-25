@@ -75,7 +75,7 @@ The 'remove' script.
 <FILE Run="/bin/bash" Method="remove">
 <INLINE>
 
-
+removepkg &packages;/&name;-&version;.txz
 
 echo 
 echo "-----------------------------------------------------------"
