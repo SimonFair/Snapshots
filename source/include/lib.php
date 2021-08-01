@@ -325,15 +325,15 @@ function build_volume($line) {
 
 
 function build_list($lines) {
-	$btrfs_list = NULL ;
+	$btrfs_list = array() ;
 	foreach ($lines as $line) {
-		if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
+		if ($line == "/etc/libvirtx" || $line == "/var/lib/dockerx" ||$line == "Mounted on") continue ;
 		
 		$vol=NULL ;
 		#exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
 		exec('btrfs subvolume list  -puqcgaR '.$line,$vol);
 		$btrfs_path = NULL ;
-
+         
 		foreach ($vol as $vline) {
 
 

@@ -25,21 +25,24 @@ if ($translations) {
 require_once "plugins/snapshots/include/lib.php";
 require_once("webGui/include/Helpers.php");
 
-function make_button($text) {
+function make_button($text, $entry) {
 #	global $paths, $Preclear , $loaded_vhci_hcd, $usbip_cmds_exist ;
 
-	$button = "<span><button  class='mount' context='%s' role='%s' %s><i class='%s'></i>%s</button></span>";
+	$button = "<span><button  onclick='%s(\"%s\")' class='mount' context='%s' role='%s' %s><i class='%s'></i>%s</button></span>";
 
 #	if ($loaded_vhci_hcd == "0")
 #		{
-			$disabled = "disabled <a href=\"#\" title='"._("vhci_hcd module not loaded")."'" ;
+		#	$disabled = "disabled <a href=\"#\" title='"._("vhci_hcd module not loaded")."'" ;
 	#	} else {
 	#		$disabled = "enabled"; 
 	#	}
 
 	$context = "disk";
-  $texts = _($text) ;
-	$button = sprintf($button, "", 'attach', $disabled, 'fa fa-import', $texts);
+   $texts = _($text) ;
+   $text_us = $text;
+   str_replace(' ', '_', $text_us) ;
+	$button = sprintf($button, $text_us , $entry, "", 'attach', $disabled, 'fa fa-import', $texts);
+   #"<button onclick='add_remote_host()'>"._('Add Remote System')."</button>";
 	
 	return $button;
 }
@@ -55,21 +58,28 @@ switch ($_POST['table']) {
 // lt = LUN Tab Tables 
 // xt = Diag Tables
 case 'sv1':
-        #exec(' cat /mnt/cache/appdata/snapcmd/dflist ',$targetcli);
+
+        echo "<thead><tr><td>"._("Volume/Sub Volume/Snapshot")."<td>"._('Read only')."</td><td>"._('Remove')."</td><td>"._('Create')."</td>" ;
+
+         echo "</tr></thead>";
+         echo "<tbody><tr>";
         exec(' df -t btrfs --output="target" ',$targetcli);
             $list=build_list($targetcli) ;
                 # echo "<tr><td>" ;var_dump( $btrfs_volumes) ;echo "</td></tr>" ;
+                
+                
+                $ct .= "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"Test{$serial}\")'><i class='fa fa-remove hdd'></a>";
 
                 foreach ($list as $key=>$vline) {
-                  echo "<tr><td> Volume:".preg_replace('/\]  +/',']</td><td>Test</td><td>',$key)."</td></td><td><td>".make_button("Create Subvolume")."</td></td><td></tr>";
+                  echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume" ,$vline)."</td>tr>";
              
                   foreach ($vline as $snap=>$snapdetail) {
                   # echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',$vline)."</td></tr>";
                if ($snapdetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
                if ($snapdetail["snap"] == false) {
-                  echo "<tr><td>       Subvolume: ".$snap.'</td><td>  Read Only:<input type="checkbox" '.$checked.' value="">'."</td><td>".make_button("Delete Subvolume")." ".make_button("Create Snapshot").'</td></tr>';
+                  echo "<tr><td>\t".$snap.'</td><td><input type="checkbox" '.$checked.' value="">'."</td>".$ct."</td><td> ".make_button("Create Snapshot"," ").'</tr>';
                } else {
-                  echo "<tr><td>          Snapshot: ".$snap.'</td><td>  Read Only:<input type="checkbox"'.$checked.' value="">'."</td><td>".make_button("Delete Snapshot").'</td></tr>'; 
+                  echo "<tr><td>\t\t".$snap.'</td><td><input type="checkbox"'.$checked.' value="">'."</td>".$ct.'</td><td></td></tr>'; 
                }
      
               }}
