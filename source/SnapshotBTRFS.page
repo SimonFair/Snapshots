@@ -567,50 +567,15 @@ _(Snapshots BTRFS)_
 
 
 
-<div style="display:none;" data-survey-name="remove_remote_host" data-survey-title="<?=_('Remove SMB/NFS mount');?>?">
-	<div data-question data-question-title="" data-question-button-done="<?=_('Remove');?>" data-question-icon="warning">
+
+<div style="display:none;" data-survey-name="create_subvolume" data-survey-title="<?=_('Create Subvolume');?>">
+
+	<div data-question data-question-title="<?=_('Subvolume Name');?>">
 		<div data-question-format>
-			[surveyOption]
+			[surveyOption][0]
 		</div>
 		<div data-question-content>
-			<div class="swal-title" style="font-size: 20px;"><?=_('This will remove the remote host');?>:</div>
-			<div style="margin-bottom: 15px;margin-top: 15px;">
-			<span style="font-weight:"><?=_('Note: This will remove host not indiviual port.');?></span><br />
-				<span style="font-weight: bold;">{0}</span>
-			</div>
-			<div class="swal-title" style="font-size: 20px;">
-				<span class="red" style="font-weight: bold;"><?=_('Are you sure');?>?</span>
-			</div>
-		</div>
-		<div data-question-load></div>
-		<div data-question-done></div>
-	</div>
-	<div data-survey-done>
-		$.post(SNAPURL,{action:"remove_remote_host_config",ip:surveyOption}).done(function(data)
-		{
-			usb_disks(tab_usbdisks);
-			swalShowResult((data == "true") ? true : false);
-		},"json").fail(function(){swalShowResult(false);});
-	</div>
-	<div>
-		<script type="text/javascript">
-			$(function(){
-				window.remove_remote_host_config = function(i){dousbipDevicesSurvey("remove_remote_host",i);}
-			});
-		</script>
-	</div>
-</div>
-
-<div style="display:none;" data-survey-name="add_entry" data-survey-title="<?=_('Add Remote Share');?>">
-
-	<div data-question data-question-title="<?=_('Choose Server');?>">
-		<div data-question-format>
-			[surveyData["PROTOCOL"] == "SMB" ? "list_samba_hosts" : "list_nfs_hosts"]
-		</div>
-		<div data-question-content>
-			<input type='text' class="swal-content__input" name='IP' autocomplete="off" required><br/>
-			<button class="swal-button" onclick='load_hosts(this,"{0}")'><?=_('Search For Servers');?></button>
-			<p><?=_('Search for Servers, or enter the Server name/IP address manually');?>.</p>
+			<input type='text' class="swal-content__input" name='IP' autocomplete="off" required value={0[0]}><br/>
 		</div>
 	</div>
 	
@@ -623,7 +588,7 @@ _(Snapshots BTRFS)_
 		if ( opts.IP) {
 			$.post(SNAPURL,opts).done(function(data)
 			{
-				usb_disks(tab_usbdisks);
+				#usb_disks(tab_usbdisks);
 				swalShowResult((data == "true") ? true : false);
 			},"json").fail(function(){swalShowResult(false);});
 		}
@@ -631,7 +596,7 @@ _(Snapshots BTRFS)_
 	<div>
 		<script type="text/javascript">
 			$(function(){
-				window.add_entry = function(i){dousbipDevicesSurvey("add_entry",i);}
+				window.create_subvolume = function(i){dousbipDevicesSurvey("create_subvolume",i);}
 			});
 		</script>
 	</div>
@@ -643,7 +608,7 @@ _(Snapshots BTRFS)_
 			[surveyOption]
 		</div>
 		<div data-question-content>
-			<div class="swal-title" style="font-size: 20px;"><?=_('This will remove sub volume');?>:</div>
+			<div class="swal-title" style="font-size: 20px;"><?=_('This will delete subvolume');?>:</div>
 			<div style="margin-bottom: 15px;margin-top: 15px;">
 				<span style="font-weight: bold;">{0}</span>
 			</div>
@@ -655,16 +620,51 @@ _(Snapshots BTRFS)_
 		<div data-question-done></div>
 	</div>
 	<div data-survey-done>
-		$.post(SNAPURL,{action:"remove_subvolume",serial:surveyOption}).done(function(data)
+		$.post(SNAPURL,{table:"delete_subvolume",subvol:surveyOption}).done(function(data)
 		{
 			usb_disks(tab_usbdisks);
 			swalShowResult((data == "true") ? true : false);
 		},"json").fail(function(){swalShowResult(false);});
+		parent.window.location.reload() ;
 	</div>
 	<div>
 		<script type="text/javascript">
 			$(function(){
 				window.delete_subvolume = function(i){dousbipDevicesSurvey("delete_subvolume",i);}
+			});
+		</script>
+	</div>
+</div>
+
+<div style="display:none;" data-survey-name="delete_snapshot" data-survey-title="<?=_('delete snapshot');?>">
+	<div data-question data-question-title="" data-question-button-done="<?=_('Delete');?>" data-question-icon="warning">
+		<div data-question-format>
+			[surveyOption]
+		</div>
+		<div data-question-content>
+			<div class="swal-title" style="font-size: 20px;"><?=_('This will delete snapshot');?>:</div>
+			<div style="margin-bottom: 15px;margin-top: 15px;">
+				<span style="font-weight: bold;">{0}</span>
+			</div>
+			<div class="swal-title" style="font-size: 20px;">
+				<span class="red" style="font-weight: bold;"><?=_('Are you sure');?>?</span>
+			</div>
+		</div>
+		<div data-question-load></div>
+		<div data-question-done></div>
+	</div>
+	<div data-survey-done>
+		$.post(SNAPURL,{table:"delete_subvolume",subvol:surveyOption}).done(function(data)
+		{
+		swalShowResult((data == "true") ? true : false) ;
+		},"json").fail(function(){swalShowResult(false);});
+        parent.window.location.reload() ;
+	</div>
+	<div>
+		<script type="text/javascript">
+			$(function(){
+				window.delete_snapshot = function(i){dousbipDevicesSurvey("delete_snapshot",i);}
+			
 			});
 		</script>
 	</div>

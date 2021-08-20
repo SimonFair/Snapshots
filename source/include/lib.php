@@ -112,7 +112,7 @@ function listDir($root) {
 	return $paths;
 }	
 
-function unassigned_log($m, $type = "NOTICE") {
+function snap_manager_log($m, $type = "NOTICE") {
 	global $plugin;
 
 	if ($type == "DEBUG" && ! $GLOBALS["VERBOSE"]) return NULL;
@@ -327,13 +327,13 @@ function build_volume($line) {
 function build_list($lines) {
 	$btrfs_list = array() ;
 	foreach ($lines as $line) {
-		if ($line == "/etc/libvirtx" || $line == "/var/lib/dockerx" ||$line == "Mounted on") continue ;
+		if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
 		
 		$vol=NULL ;
 		#exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
 		exec('btrfs subvolume list  -puqcgaR '.$line,$vol);
 		$btrfs_path = NULL ;
-         
+        var_dump($line,$vol) ;
 		foreach ($vol as $vline) {
 
 
