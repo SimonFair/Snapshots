@@ -63,6 +63,12 @@ table.snapshot tr td:empty {  width: 50px; }
 		$.getScript( '/plugins/<?=$plugin;?>/assets/sweetalert2.js');
 	}
 
+$('#sv1 input[type="checkbox"]').change(function () {
+            var name = $(this).val();
+            var check = $(this).prop('checked');
+            console.log("Change: " + name + " to " + check);
+        });
+
 $(function(){
 $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});  
 });
@@ -572,31 +578,71 @@ _(Snapshots BTRFS)_
 
 	<div data-question data-question-title="<?=_('Subvolume Name');?>">
 		<div data-question-format>
-			[surveyOption][0]
+			[surveyOption]
 		</div>
 		<div data-question-content>
-			<input type='text' class="swal-content__input" name='IP' autocomplete="off" required value={0[0]}><br/>
+			<input type='text' class="swal-content__input" name='subvolume' autocomplete="off" required value={0}><br/>
 		</div>
 	</div>
 	
 	<div data-survey-done>
 		var opts = new Object();
-		opts["action"]   = "add_entry";
+		opts["table"]   = "create_subvolume";
 		
-		opts["IP"]       = surveyData['IP'];
+		opts["subvol"]  = surveyData['subvolume'];
 
-		if ( opts.IP) {
+		if ( opts.subvol) {
 			$.post(SNAPURL,opts).done(function(data)
 			{
-				#usb_disks(tab_usbdisks);
+				
 				swalShowResult((data == "true") ? true : false);
 			},"json").fail(function(){swalShowResult(false);});
+			parent.window.location.reload() ;
 		}
 	</div>
 	<div>
 		<script type="text/javascript">
 			$(function(){
 				window.create_subvolume = function(i){dousbipDevicesSurvey("create_subvolume",i);}
+			});
+		</script>
+	</div>
+</div>	
+
+<div style="display:none;" data-survey-name="create_snapshot" data-survey-title="<?=_('Create Snapshot');?>">
+
+	<div data-question data-question-title="<?=_('Snapshot Name');?>">
+		<div data-question-format>
+			[surveyOption]
+		</div>
+		<div data-question-content>
+					<div class="swal-title" style="font-size: 20px;"><?=_('This will create a snapshot for subvolume');?>:</div>
+			<div style="margin-bottom: 15px;margin-top: 15px;">
+				<span style="font-weight: bold;">{0}</span>
+			</div>
+			<input type='text' class="swal-content__input" name='snapshot' autocomplete="off" required value={1}><br/>
+		</div>
+	</div>
+	
+	<div data-survey-done>
+		var opts = new Object();
+		opts["table"]   = "create_snapshot";
+		opts["snapshot"]  = surveyData['snapshot'];
+		opts["subvol"]  = "/mnt/vms/VMs";
+
+
+		if ( opts.subvol) {
+			$.post(SNAPURL,opts).done(function(data)
+			{
+				swalShowResult((data == "true") ? true : false);
+			},"json").fail(function(){swalShowResult(false);});
+			parent.window.location.reload() ;
+		}
+	</div>
+	<div>
+		<script type="text/javascript">
+			$(function(){
+				window.create_snapshot = function(i){dousbipDevicesSurvey("create_snapshot",i);}
 			});
 		</script>
 	</div>

@@ -48,6 +48,7 @@ function make_button($text, $function, $entry) {
 $unraid = parse_plugin_cfg("dynamix",true);
 $display = $unraid["display"];
 global $btrfs_path, $btrfs_line ;
+snap_manager_log('snap task'.$_POST['table']) ;
 switch ($_POST['table']) {
 // sv = BTRFS Volumes Tab Tables  
 // it = Initiator Tab Tables
@@ -56,8 +57,10 @@ switch ($_POST['table']) {
 // lt = LUN Tab Tables 
 // xt = Diag Tables
 case 'sv1':
+   #$path    = unscript($_GET['path']??'');
+   $urlpath    =  $_GET['path'] ;
 
-        echo "<thead><tr><td>"._("Volume/Sub Volume/Snapshot")."<td>"._('Read only')."</td><td>"._('Remove')."</td><td>"._('Create')."</td>" ;
+        echo "<thead><tr><td>"._("Volume/Sub Volume/Snapshot")."<td>"._('Snapshot prefix')."</td><td>"._('Read only')."</td><td>"._('Remove')."</td><td>"._('Create')."</td>" ;
 
          echo "</tr></thead>";
          echo "<tbody><tr>";
@@ -69,23 +72,39 @@ case 'sv1':
                 $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='Create Subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
 
                 foreach ($list as $key=>$vline) {
-                  echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$vline)."</td>tr>";
+                  #echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$vline["vol"]["vol"].'/')."</td>tr>";
+                  echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
                   $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
 
                   foreach ($vline as $snap=>$snapdetail) {
                   # echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',$vline)."</td></tr>";
                if ($snapdetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
                if ($snapdetail["snap"] == false) {
-                  echo "<tr><td>\t".$snap.'</td><td><input type="checkbox" '.$checked.' value="">'."</td>" ;
+
+                  echo "<tr><td>\t".$snap.'</td>' ;
+                  #echo "<td>" ;
+                  #echo '   <input type="checkbox" class="iscsi'.$dname.'" value="'.$iscsiset.'" </td>'  ;
+           
+                 
+                  echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Use subvolume & YMD" ' ;
+                  if ($device["name"] != "") echo 'value="'.$device["nickname"].'" ' ;
+                  echo "</td>" ;
+
+                  
+                  
+                  echo '<td><input type="checkbox" '.$checked.' value="">'."</td>" ;
                   $remove = $snapdetail["vol"]."/".$snap ;
                   echo "<td title='"._("Delete Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
-                  
-                  echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", " ").'</tr>';
+                  $path=$snapdetail["vol"].'/'.$snap ;
+                  echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $path )."</td>" ;
+                  echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".urlencode($path)."\"></i></a></td></tr>";
                } else {
-                  echo "<tr><td>\t\t".$snap.'</td><td><input type="checkbox"'.$checked.' value="">'."</td>" ;
+                  echo "<tr><td>\t\t".$snap.'</td><td></td><td><input type="checkbox"'.$checked.' value="">'."</td>" ;
                   $remove = $snapdetail["vol"]."/".$snap ;
+                  $path=$snapdetail["vol"].'/'.$snap ;
                   echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
-                  echo '</td><td></td></tr>'; 
+                  echo '</td><td></td>' ;
+                  echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($path)."\"></i></a></td></tr>";
                }
      
               }}
@@ -113,13 +132,22 @@ case 'sv1':
          echo json_encode(TRUE);
          break;
 
-         case 'create_subvolume':
-            $subvol = urldecode(($_POST['subvol']));
-            exec('btrfs subvolume create '.$subvol, $result, $error) ;
-            #if
-            snap_manager_log('btrfs subvolume create '.$subvol.' '.$error.' '.$result[0]) ;
-            echo json_encode(TRUE);
-            break;
+      case 'create_subvolume':
+         $subvol = urldecode(($_POST['subvol']));
+         exec('btrfs subvolume create '.$subvol, $result, $error) ;
+         snap_manager_log('btrfs subvolume create '.$subvol.' '.$error.' '.$result[0]) ;
+         echo json_encode(TRUE);
+         break;
+
+      case 'create_snapshot':
+           $snapshot = urldecode(($_POST['snapshot']));
+           $subvol = urldecode(($_POST['subvol']));
+           exec('btrfs subvolume snapshot '.$subvol.' '.$snapshot, $result, $error) ;
+           snap_manager_log('btrfs snapshot create '.$snapshot.' '.$error.' '.$result[0]) ;
+           echo json_encode(TRUE);
+           break;
+   
+       
 
     
 }
