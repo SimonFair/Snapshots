@@ -1,0 +1,48 @@
+Title="_(Index of)_ $dir"
+Tag="navicon"
+Markdown="false"
+---
+<?PHP
+/* Copyright 2005-2021, Lime Technology
+ * Copyright 2012-2021, Bergware International.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2,
+ * as published by the Free Software Foundation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ */
+?>
+<?
+[$root,$main,$rest] = my_explode('/',substr($dir,1),3);
+$user = ($root=='mnt' && ($main=='user'|| $main=='user0')) ? 1 : 0;
+?>
+<style>
+.loc{text-align:left!important;padding-left:0!important}
+#title span.left{text-transform:none}
+</style>
+<script>
+$(function(){
+  timers.browse = setTimeout(function(){$('div.spinner.fixed').show('slow');},500);
+  $.get('/webGui/include/Browse.php',{dir:"<?=addslashes(urlencode($dir))?>",path:"<?=$path?>",user:<?=$user?>},function(data){
+    clearTimeout(timers.browse);
+    var table = $('table.indexer');
+    var col = $.cookie('col')||1;
+    var dir = $.cookie('dir')||0;
+    table.html(data);
+    table.bind('sortEnd',function(e,t){
+      var sort = e.target.config.sortList.toString().split(',');
+      $.cookie('col',sort[0],{path:'/'});
+      $.cookie('dir',sort[1],{path:'/'});
+    });
+    $('div.spinner.fixed').hide('slow');
+    table.tablesorter({sortList:[[col,dir],[1,0]],sortAppend:[[1,0]],textAttribute:'data'});
+  });
+});
+</script>
+<table class="indexer tablesorter shift">
+ <thead><tr><th>_(Type)_</th><th class='sorter-text'>_(Name)_</th><th>_(Size)_</th><th>_(Last Modified)_</th><th style="width:200px">_(Location)_</th></tr></thead>
+ <tbody><tr><td colspan="5">&nbsp;</td></tr></tbody>
+</table>
+<input type="button" value="_(Done)_" onclick="done('Browse')">

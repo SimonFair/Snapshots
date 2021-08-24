@@ -54,6 +54,8 @@ table.snapshot tr td:empty {  width: 50px; }
 
 </style>
 
+
+
 <script>
 	var SNAPURL		= '/plugins/<?=$plugin;?>/include/snapshots.php';
 
@@ -63,17 +65,13 @@ table.snapshot tr td:empty {  width: 50px; }
 		$.getScript( '/plugins/<?=$plugin;?>/assets/sweetalert2.js');
 	}
 
-$('#sv1 input[type="checkbox"]').change(function () {
-            var name = $(this).val();
-            var check = $(this).prop('checked');
-            console.log("Change: " + name + " to " + check);
-        });
+
 
 $(function(){
 $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});  
+
+      
 });
-
-
 
 
 	if (typeof " ".formatUnicorn !== "function")
@@ -140,6 +138,17 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 			return dim;
 		}
 	}(jQuery));
+
+	function OnChangeCheckbox(box)
+	{
+
+				$.post(SNAPURL,{'table':"change_ro",'checked':box.checked, 'path':box.value}).done(function(data)
+		{
+
+
+		
+		});
+	}
 
 
 	function usbip_attach(el, op, device) {
@@ -597,6 +606,7 @@ _(Snapshots BTRFS)_
 				
 				swalShowResult((data == "true") ? true : false);
 			},"json").fail(function(){swalShowResult(false);});
+			
 			parent.window.location.reload() ;
 		}
 	</div>
@@ -609,44 +619,7 @@ _(Snapshots BTRFS)_
 	</div>
 </div>	
 
-<div style="display:none;" data-survey-name="create_snapshot" data-survey-title="<?=_('Create Snapshot');?>">
-
-	<div data-question data-question-title="<?=_('Snapshot Name');?>">
-		<div data-question-format>
-			[surveyOption]
-		</div>
-		<div data-question-content>
-					<div class="swal-title" style="font-size: 20px;"><?=_('This will create a snapshot for subvolume');?>:</div>
-			<div style="margin-bottom: 15px;margin-top: 15px;">
-				<span style="font-weight: bold;">{0}</span>
-			</div>
-			<input type='text' class="swal-content__input" name='snapshot' autocomplete="off" required value={1}><br/>
-		</div>
-	</div>
 	
-	<div data-survey-done>
-		var opts = new Object();
-		opts["table"]   = "create_snapshot";
-		opts["snapshot"]  = surveyData['snapshot'];
-		opts["subvol"]  = "/mnt/vms/VMs";
-
-
-		if ( opts.subvol) {
-			$.post(SNAPURL,opts).done(function(data)
-			{
-				swalShowResult((data == "true") ? true : false);
-			},"json").fail(function(){swalShowResult(false);});
-			parent.window.location.reload() ;
-		}
-	</div>
-	<div>
-		<script type="text/javascript">
-			$(function(){
-				window.create_snapshot = function(i){dousbipDevicesSurvey("create_snapshot",i);}
-			});
-		</script>
-	</div>
-</div>	
 
 <div style="display:none;" data-survey-name="delete_subvolume" data-survey-title="<?=_('delete_subvolume');?>">
 	<div data-question data-question-title="" data-question-button-done="<?=_('Remove');?>" data-question-icon="warning">
@@ -682,6 +655,38 @@ _(Snapshots BTRFS)_
 	</div>
 </div>
 
+<div style="display:none;" data-survey-name="create_snapshot" data-survey-title="">
+	<div data-question data-question-title="<?=_('Create Snapshot');?>" data-question-button-done="<?=_('Change');?>">
+		<div data-question-format>
+			[surveyOption.subvol,surveyOption.snap]
+		</div>
+		<div data-question-content>
+			<input type="text" class="swal-content__input" name="snapshot" value={1} placeholder="<?=_('Snap Shot Name');?>" required>
+			<p><?=_('Subvolume Name');?>:&nbsp;{0}</p>
+			
+		</div>
+		<div data-question-load></div>
+		<div data-question-done>
+			(surveyData["snapshot"].length)
+		</div>
+	</div>
+	<div data-survey-done data-survey-done-wait="true">
+		$.post(SNAPURL, {table:"create_snapshot", subvol:surveyOption.subvol, snapshot:surveyData['snapshot']}).done(function(data)
+		{
+			usb_disks(tab_usbdisks);
+			swalShowResult((data == "true") ? true : false);
+		},"json").fail(function(){swalShowResult(false);});
+		parent.window.location.reload() ;
+	</div>
+	<div>
+		<script type="text/javascript">
+			$(function() {
+				window.create_snapshot = function(subvol, snap){dousbipDevicesSurvey("create_snapshot",{subvol:subvol,snap:snap});}
+			});
+		</script>
+	</div>
+</div>
+
 <div style="display:none;" data-survey-name="delete_snapshot" data-survey-title="<?=_('delete snapshot');?>">
 	<div data-question data-question-title="" data-question-button-done="<?=_('Delete');?>" data-question-icon="warning">
 		<div data-question-format>
@@ -711,6 +716,36 @@ _(Snapshots BTRFS)_
 			$(function(){
 				window.delete_snapshot = function(i){dousbipDevicesSurvey("delete_snapshot",i);}
 			
+			});
+		</script>
+	</div>
+</div>
+
+<div style="display:none;" data-survey-name="change_mountpoint" data-survey-title="">
+	<div data-question data-question-title="<?=_('Change Disk Mount Point');?>" data-question-button-done="<?=_('Change');?>">
+		<div data-question-format>
+			[surveyOption.mountpoint,surveyOption.disklabel]
+		</div>
+		<div data-question-content>
+			<input type="text" class="swal-content__input" name="MOUNTPOINT" value={0} placeholder="<?=_('Mount Point');?>" required>
+			<p><?=_('Disk label');?>:&nbsp;{1}</p>
+			<p><?=_('Changing the Mount Point will also change the disk label');?>.</p>
+		</div>
+		<div data-question-load></div>
+		<div data-question-done>
+			(surveyData["MOUNTPOINT"].length)
+		</div>
+	</div>
+	<div data-survey-done data-survey-done-wait="true">
+		$.post(UDURL, {action:"chg_mountpoint", serial:surveyOption.serial, partition:surveyOption.partition, device:surveyOption.device, fstype:surveyOption.fstype, mountpoint:surveyData['MOUNTPOINT']}).done(function(data)
+		{
+			swalShowResult((data == "true") ? true : false);
+		},"json").fail(function(){swalShowResult(false);});
+	</div>
+	<div>
+		<script type="text/javascript">
+			$(function() {
+				window.chg_mountpoint = function(serial, partition, device, fstype, mountpoint, disklabel){doUnassignedDevicesSurvey("change_mountpoint",{serial:serial,partition:partition,device:device,fstype:fstype,mountpoint:mountpoint,disklabel:disklabel});}
 			});
 		</script>
 	</div>

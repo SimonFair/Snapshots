@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.08.22">
+<!ENTITY version   "2021.08.24">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"7be5acf5c9bbe9673b3fb30f9bc8f163">
+<!ENTITY md5		"db0ba3acf6c7112e67e0ae2792688dc7">
 ]>
 
 <PLUGIN name="&name;"

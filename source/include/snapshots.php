@@ -28,7 +28,7 @@ require_once("webGui/include/Helpers.php");
 function make_button($text, $function, $entry) {
 #	global $paths, $Preclear , $loaded_vhci_hcd, $usbip_cmds_exist ;
 
-	$button = "<span><button  onclick='%s(\"%s\")' class='mount' context='%s' role='%s' %s><i class='%s'></i>%s</button></span>";
+	$button = "<span><button  onclick='%s(\"%s\")' class='mount' context='%s' role='%s' %s ><i class='%s'></i>%s</button></span>";
 
 #	if ($loaded_vhci_hcd == "0")
 #		{
@@ -39,7 +39,8 @@ function make_button($text, $function, $entry) {
 
 	$context = "disk";
    $texts = _($text) ;
-	$button = sprintf($button, $function , $entry, "", 'attach', $disabled, 'fa fa-import', $texts);
+  
+	$button = sprintf($button, $function ,$entry, "", 'attach', $disabled, 'fa fa-import', $texts);
    #"<button onclick='add_remote_host()'>"._('Add Remote System')."</button>";
 	
 	return $button;
@@ -48,7 +49,7 @@ function make_button($text, $function, $entry) {
 $unraid = parse_plugin_cfg("dynamix",true);
 $display = $unraid["display"];
 global $btrfs_path, $btrfs_line ;
-snap_manager_log('snap task'.$_POST['table']) ;
+#snap_manager_log('snap task'.$_POST['table']) ;
 switch ($_POST['table']) {
 // sv = BTRFS Volumes Tab Tables  
 // it = Initiator Tab Tables
@@ -60,7 +61,7 @@ case 'sv1':
    #$path    = unscript($_GET['path']??'');
    $urlpath    =  $_GET['path'] ;
 
-        echo "<thead><tr><td>"._("Volume/Sub Volume/Snapshot")."<td>"._('Snapshot prefix')."</td><td>"._('Read only')."</td><td>"._('Remove')."</td><td>"._('Create')."</td>" ;
+        echo "<thead><tr><td>"._("Volume/Sub Volume/Snapshot")."<td>"._('Snapshot prefix/Send Path')."</td><td>"._('Read only')."</td><td>"._('Remove')."</td><td>"._('Create')."</td>" ;
 
          echo "</tr></thead>";
          echo "<tbody><tr>";
@@ -90,27 +91,41 @@ case 'sv1':
                   if ($device["name"] != "") echo 'value="'.$device["nickname"].'" ' ;
                   echo "</td>" ;
 
-                  
-                  
-                  echo '<td><input type="checkbox" '.$checked.' value="">'."</td>" ;
                   $remove = $snapdetail["vol"]."/".$snap ;
+                  $path=$snapdetail["vol"].'/'.$snap ; 
+                  
+                  echo '<td><input type="checkbox" '.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
+ 
                   echo "<td title='"._("Delete Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
-                  $path=$snapdetail["vol"].'/'.$snap ;
-                  echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $path )."</td>" ;
+                  $mpoint			.= "<i class='fa fa-pencil partition-hdd'></i><a title='"._("Change Disk Mount Point")."' class='exec' onclick='chg_mountpoint(\"{$partition['serial']}\",\"{$partition['part']}\",\"{$device}\",\"{$partition['fstype']}\",\"{$mount_point}\",\"{$disk_label}\");'>{$mount_point}</a>";
+		            $mpoint			.= "{$rm_partition}</span>";
+                  $subvol=$path.'{YMD}' ;
+                  $parm="{$path}\",\"{$subvol}" ;
+                  
+                  echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
                   echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".urlencode($path)."\"></i></a></td></tr>";
                } else {
-                  echo "<tr><td>\t\t".$snap.'</td><td></td><td><input type="checkbox"'.$checked.' value="">'."</td>" ;
+
+                  echo "<tr><td>\t\t".$snap.'</td>' ;
+
+                  echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Send Path" ' ;
+                  if ($device["name"] != "") echo 'value="'.$device["nickname"].'" ' ;
+                  echo "</td>" ;
                   $remove = $snapdetail["vol"]."/".$snap ;
                   $path=$snapdetail["vol"].'/'.$snap ;
+                  echo '<td><input type="checkbox"'.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
+
                   echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
-                  echo '</td><td></td>' ;
-                  echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($path)."\"></i></a></td></tr>";
+                  echo '</td>' ;
+                  echo "</td><td> ".make_button("Send/Receive", "send_receive", $path)."</td>" ;
+                  echo "<td><a href=\"Snapshots/Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($path)."\"></i></a></td></tr>";
                }
      
               }}
        #echo "<tr><td>" ;
        #var_dump($btrfs_paths) ;
        #echo "</td></tr>" ;
+       
        break;
 
        case 'db1':
@@ -146,6 +161,14 @@ case 'sv1':
            snap_manager_log('btrfs snapshot create '.$snapshot.' '.$error.' '.$result[0]) ;
            echo json_encode(TRUE);
            break;
+
+           case 'change_ro':
+            $checked = urldecode(($_POST['checked']));
+            $path = urldecode(($_POST['path']));
+            exec('btrfs property set '.$path.' ro '.$checked, $result, $error) ;
+            snap_manager_log('btrfs property set '.$path.' '.$checked.' '.$error.' '.$result[0]) ;
+            echo json_encode(TRUE);
+            break;
    
        
 
