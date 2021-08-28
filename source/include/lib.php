@@ -334,6 +334,7 @@ function build_list($lines) {
 		exec('btrfs subvolume list  -puqcgaR '.$line,$vol);
 		$btrfs_path = NULL ;
         var_dump($line,$vol) ;
+		if ($vol != NULL) {
 		foreach ($vol as $vline) {
 
 
@@ -359,7 +360,13 @@ function build_list($lines) {
 			}
 			}
 		}
+	} else {
+		$btrfs_list[$line] =  NULL ;/*[		
 
+		 'snap' => false,
+		 'vol' => $line,
+		]; */
+	}
 # Process Snapshots
 #
 			$vol=NULL ;
@@ -396,9 +403,12 @@ function build_list($lines) {
 		}
 	}
 
-	 
+#	foreach ($btrfs_list as $key=>$list) {	
+#		ksort($btrfs_list[$key],SORT_NATURAL ) ;
+#	} 
+
 	
-ksort($btrfs_list,SORT_NATURAL ) ;
+#ksort($btrfs_list,SORT_NATURAL ) ;
 return($btrfs_list) ;
 
 }
