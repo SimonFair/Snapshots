@@ -57,7 +57,7 @@ switch ($_POST['table']) {
 // ft = Fileio Tab Tables
 // lt = LUN Tab Tables 
 // xt = Diag Tables
-case 'sv1':
+   case 'sv1':
    #$path    = unscript($_GET['path']??'');
    $urlpath    =  $_GET['path'] ;
 
@@ -87,12 +87,10 @@ case 'sv1':
                   #echo '   <input type="checkbox" class="iscsi'.$dname.'" value="'.$iscsiset.'" </td>'  ;
            
                  
-                  echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Use subvolume & YMD" ' ;
-                  if ($device["name"] != "") echo 'value="'.$device["nickname"].'" ' ;
+                  echo '<td>' ;
                   echo "</td>" ;
 
-                                    echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Default Send to Path" ' ;
-                                    if ($device["name"] != "") echo 'value="'.$device["nickname"].'" ' ;
+                                    echo '<td>' ;
                                     echo "</td>" ;
 
                   $remove = $snapdetail["vol"]."/".$snap ;
@@ -141,11 +139,96 @@ case 'sv1':
        
        break;
 
+case 'sv2':
+   #$path    = unscript($_GET['path']??'');
+   $urlpath    =  $_GET['path'] ;
+      
+   echo "<thead><tr><td>"._("Volume/Sub Volume/Snapshot")."<td>"._('Snapshot prefix')."</td><td>"._('Send To Path')."</td><td>"._('Read only')."</td><td>"._('Remove')."</td><td>"._('Create')."</td><td>"._('Settings')."</td><td>"._('Schedule')."</td><td>"._('Browse')."</td>" ;
+
+   echo "</tr></thead>";
+   echo "<tbody><tr>";
+   exec(' df -t btrfs --output="target" ',$targetcli);
+   $list=build_list2($targetcli) ;
+   # echo "<tr><td>" ;var_dump( $btrfs_volumes) ;echo "</td></tr>" ;
+            
+            
+   $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='Create Subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
+
+   foreach ($list as $key=>$vline) {
+      #echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$vline["vol"]["vol"].'/')."</td>tr>";
+      echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><td></td></td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
+      $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
+      if ($vline != NULL) {
+         foreach ($vline as $snap=>$snapdetail) {
+         # echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',$vline)."</td></tr>";
+         if ($snapdetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
+        
+
+         echo "<tr><td>\t".$snap.'</td>' ;
+         #echo "<td>" ;
+         #echo '   <input type="checkbox" class="iscsi'.$dname.'" value="'.$iscsiset.'" </td>'  ;
+
+      
+         echo '<td>' ;
+         echo "</td>" ;
+
+         echo '<td>' ;
+         echo "</td>" ;
+
+         $remove = $snapdetail["vol"]."/".$snap ;
+         $path=$snapdetail["vol"].'/'.$snap ; 
+      
+         echo '<td><input type="checkbox" '.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
+
+         echo "<td title='"._("Delete Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
+         $mpoint			.= "<i class='fa fa-pencil partition-hdd'></i><a title='"._("Change Disk Mount Point")."' class='exec' onclick='chg_mountpoint(\"{$partition['serial']}\",\"{$partition['part']}\",\"{$device}\",\"{$partition['fstype']}\",\"{$mount_point}\",\"{$disk_label}\");'>{$mount_point}</a>";
+         $mpoint			.= "{$rm_partition}</span>";
+         $subvol=$path.'{YMD}' ;
+         $parm="{$path}\",\"{$subvol}" ;
+      
+      echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
+      echo "<td><a href=\"Snapshots/SnapshotEditSettings\"><i class='fa fa-cog' title=\""._('Settings')." /mnt/user/".urlencode($path)."\"></i></a></td>" ;
+      echo "<td><a href=\"Snapshots/Browse?dir=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule')." /mnt/user/".urlencode($path)."\"></i></a></td>" ;
+      echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".urlencode($path)."\"></i></a></td></tr>";
+         
+         foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
+            if ($subvoldetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
+            echo "<tr><td>\t\t".$subvolname.'</td>' ;
+            echo '<td>' ;
+            #echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Send Path" ' ;
+            if ($device["name"] != "") echo 'value="'.$device["nickname"].'" ' ;
+            echo "</td>" ;
+            echo '<td>' ; echo "</td>" ;
+            $remove = $subvoldetail["vol"]."/".$subvolname ;
+            $path=$subvoldetail["vol"].'/'.$subvolname ;
+            echo '<td><input type="checkbox"'.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
+
+            echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
+            echo '</td>' ;
+            $dftsend = "/mnt/VMs/test" ;
+            $parm="{$path}\",\"{$dftsend}" ;
+            echo "</td><td> ".make_button("Send/Receive", "send_snapshot", $parm)."</td><td></td><td></td>" ;
+            #<i class='fa fa-usb' aria-hidden=true></i>
+         
+            echo "<td><a href=\"Snapshots/Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($path)."\"></i></a></td></tr>";
+         }
+      }
+         } else {
+            echo "<tr><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td></tr>" ;
+         }   
+   }
+   #echo "<tr><td>" ;
+   #var_dump($btrfs_paths) ;
+   #echo "</td></tr>" ;
+   
+   break;
+      
+
        case 'db1':
         
        # exec(' cat /mnt/cache/appdata/snapcmd/dflist ',$targetcli);
         exec(' df -t btrfs --output="target" ',$targetcli);
-            $list=build_list($targetcli) ;
+            $list=build_list2($targetcli) ;
       
            echo "<tr><td>" ;
            var_dump($list) ;

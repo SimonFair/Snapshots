@@ -68,6 +68,7 @@ table.snapshot tr td:empty {  width: 50px; }
 
 
 $(function(){
+$('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2'});  
 $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});  
 
       
@@ -576,7 +577,8 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 
 _(Snapshots BTRFS)_
 
-<pre><form id="SnapBTRFS" onsubmit="return false"><table id='sv1' class='disk_status snapshot'><tr><td><div class="spinner"></div></td></tr></table></form></pre><br>
+<pre><form id="SnapBTRFS" onsubmit="return false"><table id='sv2' class='disk_status snapshot'><tr><td><div class="spinner"></div></td></tr></table></form></pre><br>
+
 
 <input type="button" value="_(Done)_" onclick="done()">
 
