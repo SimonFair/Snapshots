@@ -430,7 +430,14 @@ function process_subvolumes($btrfs_list,$line, $uuid){
 		 	unset(  $btrfs_list[$line][$arrMatch["path"]] );
 
 			$subvol = $uuid[$arrMatch['puuid']] ;
+			$ruuid =  $arrMatch['ruuid'] ;
 			if ($subvol == NULL) $subvol = "~NONE" ; 
+			if ($ruuid != "-" ) {
+				$incremental = $subvol ;
+				$subvol = "~INCREMENTAL" ;
+			} else { $inremental = NULL ;}
+
+				
 		 
 		 	$btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = [		
 		 	'uuid' =>$arrMatch['uuid'],
@@ -440,6 +447,7 @@ function process_subvolumes($btrfs_list,$line, $uuid){
 			'odate' => 	$arrMatch['odate'],
 			'otime' => $arrMatch['otime'],
 			'vol' => $line,
+			'incremental' => $incremental,
 		  	];
 
 			# Get ro status

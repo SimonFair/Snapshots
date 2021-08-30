@@ -131,7 +131,7 @@ switch ($_POST['table']) {
                }
             }
               } else {
-                 echo "<tr><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td></tr>" ;
+                 echo "<tr><td></td><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td><td></td><td></td></tr>" ;
               }}
        #echo "<tr><td>" ;
        #var_dump($btrfs_paths) ;
@@ -196,7 +196,7 @@ case 'sv2':
             echo "<tr><td>\t\t".$subvolname.'</td>' ;
             echo '<td>' ;
             #echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Send Path" ' ;
-            if ($device["name"] != "") echo 'value="'.$device["nickname"].'" ' ;
+            if ($subvoldetail["incremental"] != "" ) echo $subvoldetail["incremental"] ;
             echo "</td>" ;
             echo '<td>' ; echo "</td>" ;
             $remove = $subvoldetail["vol"]."/".$subvolname ;
@@ -214,7 +214,7 @@ case 'sv2':
          }
       }
          } else {
-            echo "<tr><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td></tr>" ;
+            echo "<tr><td></td><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td><td></td><td></td></tr>" ;
          }   
    }
    #echo "<tr><td>" ;
