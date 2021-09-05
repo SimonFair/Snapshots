@@ -41,35 +41,18 @@ $default_file = safe_filename("/boot/config/plugins/{$plugin}/".urldecode($_GET[
 
 if (isset($_GET['s'])) {
 	$serial = $_GET['s'];
-	$vm = $_GET['v'];
-	$isflash = $_GET['f'];
+
 	$width = "50%";
-	$autoconnect = (is_autoconnect($serial)) ? "checked" : "";
-	$autoconnectstart = (is_autoconnectstart($serial)) ? "checked" : ""; 
-		if (($file) && (! file_exists($file))) {
-		set_config($serial,"command.{$partition}","");
-		$file = "";
-	}
-	$file = get_vm_config($serial,"command");
-	if (($file) && (! file_exists($file))) {
-		set_vm_mapping($serial,"command","");
-		$file = "";
-	}
-	$user_file = get_vm_config($serial,"user_command");
-	if ((($user_file) && (! file_exists($user_file))) || (($user_file) && (! $file))) {
-		set_vm_mapping($serial,"user_command","");
-		$user_file = "";
-	}
-	$background = (get_vm_config($serial,"command_bg") != "false" ) ? "checked" : "";
-	$background_action = "background";
+
+
+
+	$subvoldft = get_subvol_config($serial,"default");
+	$snapto = get_subvol_config($serial,"sendto");
+
+#$snapto = $subvoldft = "Test" ;
+
 }
-if (substr($serial,0 , 5) == "Port:") {
-	$edittype="Edit Settings for USB Port" ;
-	$filename = "Port_".substr($serial,5) ;
- } else {
-	 $edittype="Edit Settings for USB Device" ;
-	 $filename=$serial ;
- }
+
 
 if ((! file_exists($file)) || (! is_dir("/boot/config/plugins/user.scripts/scripts/"))) {
 	$disabled = "disabled";
@@ -91,11 +74,16 @@ if ((! file_exists($file)) || (! is_dir("/boot/config/plugins/user.scripts/scrip
 <script>
 $(function(){
   $("#fiodestinationShare").fileTreeAttach();
+   $("#fiodestinationShare2").fileTreeAttach();
 });
 
 function path_selected() {
   var share = $("#fiotdestinationShare").val();
   document.getElementById("fiopathfromjs").value = share;
+}
+function path_selected2() {
+  var share2 = $("#fiopathfromjs").val();
+  document.getElementById("fiopathfromjs2").value = share2;
 }
 </script>
 
@@ -129,13 +117,13 @@ function path_selected() {
 </table>
 <td><b>Snapshot Prefix</b></td>
         <input id="pathfromjs" name="fiopathfromjs" type="hidden"></input>
-        <input type='text' size="15" class='setting' id="prefix" placeholder="/mnt/user/" name="sharefolder" data-pickroot="/mnt/user" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" onchange="path_selected()" required>
+        <input type='text' size="15" class='setting' id="fiodestinationShare" placeholder=<?=$subvoldft;?> name="sharefolder" data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected()" required>
     </td>
 
 
 <td><b>Send to location</b></td>
-        <input id="pathfromjs" name="fiopathfromjs" type="hidden"></input>
-        <input type='text' size="15" class='setting' id="fiodestinationShare" placeholder="/mnt/user/" name="sharefolder" data-pickroot="/mnt/user" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" onchange="path_selected()" required>
+        <input id="pathfromjs2" name="fiopathfromjs2" type="hidden"></input>
+        <input type='text' size="15" class='setting' id="fiodestinationShare2" placeholder=<?=$snapto;?> name="sharefolder2" data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected2()" required>
     </td>
 
 
@@ -173,7 +161,15 @@ function path_selected() {
 	});
 
 	
-	$('#vmselection').change(function()
+	$('#sharefolder').change(function()
+	{
+		$.post(SNAPURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)
+		{
+				
+		},"json");
+	});
+
+	$('#sharefolder2').change(function()
 	{
 		$.post(SNAPURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)
 		{

@@ -22,6 +22,80 @@ define('DEFAULT_TARGETCLI_CONFIG', '{
   "targets": []
 }');
 
+$paths = [  "device_log"		=> "/tmp/{$plugin}/",
+			"subvol_settings"	=> "/tmp/{$plugin}/config/subvol.cfg",
+		];
+
+		
+#########################################################
+#############        MISC FUNCTIONS        ##############
+#########################################################
+
+
+
+function is_ip($str) {
+	return filter_var($str, FILTER_VALIDATE_IP);
+}
+
+function _echo($m) { echo "<pre>".print_r($m,TRUE)."</pre>";}; 
+
+function save_ini_file($file, $array) {
+	global $plugin;
+
+	$res = array();
+	foreach($array as $key => $val) {
+		if(is_array($val)) {
+			$res[] = PHP_EOL."[$key]";
+			foreach($val as $skey => $sval) $res[] = "$skey = ".(is_numeric($sval) ? $sval : '"'.$sval.'"');
+		} else {
+			$res[] = "$key = ".(is_numeric($val) ? $val : '"'.$val.'"');
+		}
+	}
+
+	/* Write changes to tmp file. */
+	file_put_contents($file, implode(PHP_EOL, $res));
+
+	/* Write changes to flash. */
+	$file_path = pathinfo($file);
+	if ($file_path['extension'] == "cfg") {
+		file_put_contents("/boot/config/plugins/".$plugin."/".basename($file), implode(PHP_EOL, $res));
+	}
+}
+
+#########################################################
+############        CONFIG FUNCTIONS        #############
+#########################################################
+
+function get_config($sn, $var) {
+	$config_file = $GLOBALS["paths"]["config_file"];
+	$config = @parse_ini_file($config_file, true);
+	return (isset($config[$sn][$var])) ? html_entity_decode($config[$sn][$var]) : FALSE;
+}
+
+function set_config($sn, $var, $val) {
+	$config_file = $GLOBALS["paths"]["config_file"];
+	$config = @parse_ini_file($config_file, true);
+	$config[$sn][$var] = htmlentities($val, ENT_COMPAT);
+	save_ini_file($config_file, $config);
+	return (isset($config[$sn][$var])) ? $config[$sn][$var] : FALSE;
+}
+
+
+function get_subvol_config($sn, $var) {
+	$config_file = $GLOBALS["paths"]["subvol_settings"];
+	$config = @parse_ini_file($config_file, true);
+	return (isset($config[$sn][$var])) ? html_entity_decode($config[$sn][$var]) : FALSE;
+}
+
+function set_subvol_config($sn, $var, $val) {
+	$config_file = $GLOBALS["paths"]["subvol_settings"];
+	$config = @parse_ini_file($config_file, true);
+	$config[$sn][$var] = htmlentities($val, ENT_COMPAT);
+	save_ini_file($config_file, $config);
+	return (isset($config[$sn][$var])) ? $config[$sn][$var] : FALSE;
+}
+
+
 
 function get_unassigned_disks() {
 	global $disks;

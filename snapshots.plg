@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.08.30">
+<!ENTITY version   "2021.09.05">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"b94a043cdf98485b2561971a08944638">
+<!ENTITY md5		"4ea52aedb290178140dae3add734507a">
 ]>
 
 <PLUGIN name="&name;"
@@ -28,6 +28,13 @@
   - Initial Dev Release.
 
 </CHANGES>
+
+<FILE Name="/boot/config/plugins/&name;/subvol.cfg">
+<INLINE>
+<![CDATA[
+]]>
+</INLINE>
+</FILE>
 
 <!--
 The 'pre-install' script.

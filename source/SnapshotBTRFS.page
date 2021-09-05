@@ -587,7 +587,7 @@ _(Snapshots BTRFS)_
 
 <div style="display:none;" data-survey-name="create_subvolume" data-survey-title="<?=_('Create Subvolume');?>">
 
-	<div data-question data-question-title="<?=_('Subvolume Name');?>">
+	<div data-question data-question-title="<?=_('Subvolume Name');?>" data-question-button-done="<?=_('Create');?>">
 		<div data-question-format>
 			[surveyOption]
 		</div>
@@ -624,7 +624,7 @@ _(Snapshots BTRFS)_
 	
 
 <div style="display:none;" data-survey-name="delete_subvolume" data-survey-title="<?=_('delete_subvolume');?>">
-	<div data-question data-question-title="" data-question-button-done="<?=_('Remove');?>" data-question-icon="warning">
+	<div data-question data-question-title="" data-question-button-done="<?=_('Delete');?>" data-question-icon="warning">
 		<div data-question-format>
 			[surveyOption]
 		</div>
@@ -658,7 +658,7 @@ _(Snapshots BTRFS)_
 </div>
 
 <div style="display:none;" data-survey-name="create_snapshot" data-survey-title="">
-	<div data-question data-question-title="<?=_('Create Snapshot');?>" data-question-button-done="<?=_('Change');?>">
+	<div data-question data-question-title="<?=_('Create Snapshot');?>" data-question-button-done="<?=_('Create');?>">
 		<div data-question-format>
 			[surveyOption.subvol,surveyOption.snap]
 		</div>
@@ -690,7 +690,7 @@ _(Snapshots BTRFS)_
 </div>
 
 <div style="display:none;" data-survey-name="send_snapshot" data-survey-title="">
-	<div data-question data-question-title="<?=_('Send Snapshot');?>" data-question-button-done="<?=_('Change');?>">
+	<div data-question data-question-title="<?=_('Send Snapshot');?>" data-question-button-done="<?=_('Send');?>">
 		<div data-question-format>
 			[surveyOption.subvol,surveyOption.sendsnap]
 		</div>
