@@ -28,6 +28,7 @@ require_once "$docroot/plugins/dynamix.vm.manager/include/libvirt_helpers.php";
 
 
 
+
 function safe_filename($string) {
 	$string = preg_replace('~[^0-9a-z -_]~i', '', $string);
 	/* Remove special characters from file name */
@@ -61,7 +62,9 @@ if ((! file_exists($file)) || (! is_dir("/boot/config/plugins/user.scripts/scrip
 ?>
 
 <script type="text/javascript" src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
-<script type="text/javascript" src="<?autov('/webGui/javascript/jquery.filetree.js')?>"></script>
+
+
+<script src="<?autov('/webGui/javascript/jquery.filetree.js')?>" charset="utf-8"></script>
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.ui.css')?>">
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.switchbutton.css')?>">
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.filetree.css')?>" >
@@ -73,17 +76,17 @@ if ((! file_exists($file)) || (! is_dir("/boot/config/plugins/user.scripts/scrip
 
 <script>
 $(function(){
-  $("#fiodestinationShare").fileTreeAttach();
-   $("#fiodestinationShare2").fileTreeAttach();
+  $("#subvolprefix").fileTreeAttach();
+  $("#subvolsendto").fileTreeAttach();
 });
 
 function path_selected() {
-  var share = $("#fiotdestinationShare").val();
-  document.getElementById("fiopathfromjs").value = share;
+  var share = $("#subvolprefix").val();
+  document.getElementById("subvolprefix").value = share;
 }
 function path_selected2() {
-  var share2 = $("#fiopathfromjs").val();
-  document.getElementById("fiopathfromjs2").value = share2;
+  var share2 = $("#subvolsendto").val();
+  document.getElementById("subvolsendto").value = share2;
 }
 </script>
 
@@ -111,25 +114,22 @@ function path_selected2() {
 <tr>
 &nbsp;
 
-<!-- <td title='_(Turn on to Auto Connect to VM if USB Device is Added)_.'><input type='checkbox' class='autoconnect-switch'></td> -->
-<!-- <td title='_(Turn on to Auto Connect to VM if VM is started)_.'><input type='checkbox' class='autoconnectstart-switch'></td> -->
+
 </tr>
 </table>
 <td><b>Snapshot Prefix</b></td>
-        <input id="pathfromjs" name="fiopathfromjs" type="hidden"></input>
-        <input type='text' size="15" class='setting' id="fiodestinationShare" placeholder=<?=$subvoldft;?> name="sharefolder" data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected()" required>
+        <input type='text' size="15" class='setting' id="subvolprefix" placeholder=<?=$subvoldft;?>  data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected()" required>
     </td>
 
 
 <td><b>Send to location</b></td>
-        <input id="pathfromjs2" name="fiopathfromjs2" type="hidden"></input>
-        <input type='text' size="15" class='setting' id="fiodestinationShare2" placeholder=<?=$snapto;?> name="sharefolder2" data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected2()" required>
+        <input type='text' size="15" class='setting' id="subvolsendto" placeholder=<?=$snapto;?>  data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected2()" required>
     </td>
-
 
 
 <?endif;?>
 
+: <input type="button" id="applyBtn" value="_(Apply)_" disabled><input type="button" value="_(Done)_" onclick="done()">
 
 </form>
 
@@ -140,55 +140,26 @@ function path_selected2() {
 	var SNAPURL		= '/plugins/<?=$plugin;?>/include/snapshots.php';
 
 
-
-
-	$('.autoconnect-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect at USB Device Plugin');?>", off_label: "<?=_('Auto Connect at USB Device Plugin');?>", checked:"<?=$autoconnect;?>" });
-	$('.autoconnect-switch').change(function()
+	$('#subvolprefix').change(function()
 	{
-		$.post(SNAPURL,{action:"autoconnect",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
-		{
-			$(this).prop("checked",data.result);
-		},"json");
-	});
-
-	$('.autoconnectstart-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect to VM at VM Start');?>", off_label: "<?=_('Auto Connect to VM at VM Start');?>", checked:"<?=$autoconnectstart;?>" });
-	$('.autoconnectstart-switch').change(function()
-	{
-		$.post(SNAPURL,{action:"autoconnectstart",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
-		{
-			$(this).prop("checked",data.result);
-		},"json");
-	});
-
-	
-	$('#sharefolder').change(function()
-	{
-		$.post(SNAPURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)
+		$.post(SNAPURL,{table:"updatedefault",vol:"<?=$serial;?>",path:$(this).prop("value")},function(data)
 		{
 				
 		},"json");
 	});
 
-	$('#sharefolder2').change(function()
+	$('#subvolsendto').change(function()
 	{
-		$.post(SNAPURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)
+		$.post(SNAPURL,{table:"updatesendto",vol:"<?=$serial;?>",path:$(this).prop("value")},function(data)
 		{
 				
 		},"json");
 	});
 
-	$('.background-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Run in Background');?>", off_label: "<?=_('Run in Backround');?>", checked:"<?=$background;?>" });
-	$('.background-switch').change(function()
-	{
-		$.post(SNAPURL,{action:"<?=$background_action;?>",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
-		{
-			$(this).prop("checked",data.result);
-		},"json");
-	});
 
 	<?if (isset($_GET['s'])):?>
 		$( "form" ).submit(function( event ) {
-			$.post(SNAPURL,{action:"set_command",serial:"<?=$serial;?>",command:$("input[name='#file']").val(),user_command:$("input[name='#user_file']").val()},function(data){event.preventDefault()},"json");
+			$.post(SNAPURL,{action:"set_command",vol:"<?=$serial;?>",command:$("input[name='#file']").val(),user_command:$("input[name='#user_file']").val()},function(data){event.preventDefault()},"json");
 		});
 	<?endif;?>
 

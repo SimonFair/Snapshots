@@ -200,7 +200,7 @@ case 'sv2':
       
       echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
       echo "<td><a href=\"Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
-      echo "<td><a href=\"Snapshots/Browse?dir=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule')." /mnt/user/".$path."\"></i></a></td>" ;
+      echo "<td><a href=\"Snapshots/SnapshotSchedule?s=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
       echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -285,7 +285,22 @@ case 'sv2':
             snap_manager_log('btrfs property set '.$path.' '.$checked.' '.$error.' '.$result[0]) ;
             echo json_encode(TRUE);
             break;
-   
+
+            case 'updatedefault':
+               $vol = urldecode(($_POST['vol']));
+               $path = urldecode(($_POST['path']));
+               set_subvol_config($vol, "default", $path) ;
+               snap_manager_log('btrfs update default path '.$vol ) ;
+               echo json_encode(TRUE);
+               break;
+
+               case 'updatesendto':
+                  $vol = urldecode(($_POST['vol']));
+                  $path = urldecode(($_POST['path']));
+                 set_subvol_config($vol, "sendto", $path) ;
+                  snap_manager_log('btrfs update sendto path ' );
+                  echo json_encode(TRUE);
+                  break;
        
 
     

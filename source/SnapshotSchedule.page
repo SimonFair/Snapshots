@@ -1,0 +1,225 @@
+Title="Edit Snap Schedule"
+---
+<?php
+/* 
+ * Copyright 2020 -	Simon Fairweather
+ *
+ *  Based on original code from Guilherme Jardim and Dan Landon
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2,
+ * as published by the Free Software Foundation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ */
+
+$plugin = "snapshots";
+$docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+$translations = file_exists("$docroot/webGui/include/Translations.php");
+require_once "$docroot/plugins/$plugin/include/Legacy.php";
+require_once "$docroot/plugins/dynamix.vm.manager/include/libvirt_helpers.php";
+?>
+<?if (! $translations):?>
+<?eval('?>'.parse_file("$docroot/plugins/$plugin/SnapshotSchedule.page"))?>
+<?else:?>
+<?
+require_once("plugins/{$plugin}/include/lib.php");
+$setup = true;
+$cron = explode(' ',$var['sharesnapSchedule']);
+$move = $cron[2]!='*' ? 3 : ($cron[4]!='*' ? 2 : (substr($cron[1],0,1)!='*' ? 1 : 0));
+$mode = ['Hourly','Daily','Weekly','Monthly'];
+$days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+$_SESSION['availablevms'] = $lv->get_domains();
+if (isset($_GET['s'])) {
+	$serial = $_GET['s'];
+
+	$width = "50%";
+
+
+
+	$subvoldft = get_subvol_config($serial,"default");
+	$snapto = get_subvol_config($serial,"sendto");
+
+#$snapto = $subvoldft = "Test" ;
+
+}
+?>
+
+
+
+<script>
+<? if ($setup == true):?>
+$(function() {
+  presetsnap(document.snap_schedule);
+});
+<? endif; ?>
+// Fool Unraid by simulating the original input field
+function preparesnap(form) {
+  var mode = form.sharesnapSchedule.value;
+  var min = mode!=0 ? form.min.value : 0;
+  var hour = mode!=0 ? form.hour1.value : form.hour2.value;
+  form.sharesnapSchedule.options[mode].value = min+' '+hour+' '+form.dotm.value+' * '+form.day.value;
+  form.min.disabled = true;
+  form.hour1.disabled = true;
+  form.hour2.disabled = true;
+  form.dotm.disabled = true;
+  form.day.disabled = true;
+}
+function presetsnap(form) {
+  var mode = form.sharesnapSchedule.value;
+  form.min.disabled = false;
+  form.day.disabled = mode!=2;
+  form.dotm.disabled = mode!=3;
+  form.day.value = form.day.disabled ? '*' : (form.day.value=='*' ? 0 : form.day.value);
+  form.dotm.value = form.dotm.disabled ? '*' : (form.dotm.value=='*' ? 1 : form.dotm.value);
+  if (mode==0) {$('#H1').hide(); $('#H2').show();} else {$('#H2').hide(); $('#H1').show();}
+}
+</script>
+<form markdown="1" name="snap_schedule" method="POST" action="/updatenone.htm" target="progressFrame" onsubmit="preparesnap(this)">
+<strong>_(SubVolume)_: </strong><?=$serial;?> 
+
+<?if ($setup):?>
+_(Snap schedule)_:
+: <select name="sharesnapSchedule" onchange="presetsnap(this.form)">
+  <?for ($m=0; $m<count($mode); $m++):?>
+  <?=mk_option($move, strval($m), _($mode[$m]))?>
+  <?endfor;?>
+  </select>
+
+:snap_schedule_help:
+
+_(Day of the week)_:
+: <select name="day">
+  <?for ($d=0; $d<count($days); $d++):?>
+  <?=mk_option($cron[4], strval($d), _($days[$d],0))?>
+  <?endfor;?>
+  <?=mk_option($cron[4], "*", "--------", "disabled")?>
+  </select>
+
+:snap_day_of_the_week_help:
+
+_(Day of the month)_:
+: <select name="dotm">
+  <?for ($d=1; $d<=31; $d++):?>
+  <?=mk_option($cron[2], strval($d), sprintf("%02d", $d))?>
+  <?endfor;?>
+  <?=mk_option($cron[2], "*", "--------", "disabled")?>
+  </select>
+
+:snap_day_of_the_month_help:
+
+_(Time of the day)_:
+: <span id="H1"<?if ($move==0):?> style="display:none"<?endif;?>><select name="hour1" class="narrow">
+  <?for ($d=0; $d<=23; $d++):?>
+  <?=mk_option($cron[1], strval($d), sprintf("%02d", $d))?>
+  <?endfor;?>
+  </select>
+  <select name="min" class="narrow">
+  <?for ($d=0; $d<=55; $d+=5):?>
+  <?=mk_option($cron[0], strval($d), sprintf("%02d", $d))?>
+  <?endfor;?>
+  </select>&nbsp;&nbsp;_(HH:MM)_</span>
+: <span id="H2"<?if ($move!=0):?> style="display:none"<?endif;?>><select name="hour2">
+  <?=mk_option($cron[1], "*/1", _("Every hour"))?>
+  <?=mk_option($cron[1], "*/2", _("Every 2 hours"))?>
+  <?=mk_option($cron[1], "*/3", _("Every 3 hours"))?>
+  <?=mk_option($cron[1], "*/4", _("Every 4 hours"))?>
+  <?=mk_option($cron[1], "*/6", _("Every 6 hours"))?>
+  <?=mk_option($cron[1], "*/8", _("Every 8 hours"))?>
+  </select></span>
+
+:snap_time_of_the_day_help:
+
+_(Snap Schedule logging)_:
+: <select name="sharesnapLogging">
+  <?=mk_option($var['sharesnapLogging'], "yes", _("Enabled"))?>
+  <?=mk_option($var['sharesnapLogging'], "no", _("Disabled"))?>
+  </select>
+
+:snap_logging_help:
+
+_(Snap Send )_:
+: <select name="sharesnapLogging">
+  <?=mk_option($var['sharesnapLogging'], "local", _("Local"))?>
+  <?=mk_option($var['sharesnapLogging'], "no", _("Disabled"))?>
+  <?=mk_option($var['sharesnapLogging'], "remote", _("Remote"))?>
+  </select>
+
+
+
+ _(Remote Host)_:&nbsp;
+: <input type="text" name="newiqn" required value="" placeholder="Remote host ip/name" />
+
+  _(Snap Send Incremental)_:
+: <select name="sharesnapLogging">
+  <?=mk_option($var['sharesnapLogging'], "yes", _("Yes"))?>
+  <?=mk_option($var['sharesnapLogging'], "no", _("No"))?>
+  </select>
+
+
+ 
+ _(Master Snap)_:&nbsp;
+: <input type="text" name="newiqn" required value="" placeholder="Previous" /> 
+
+
+
+ Virtual Machine
+:   <select id="vmselection" name="vmselection" >
+    <option value=""</option>
+      <?php
+	 	$output = $_SESSION['availablevms'];
+	    
+      foreach($output as $item){
+		  
+      if ($item === $vm) {
+      echo "<option selected=\"selected\" value=\"$item\">$item</option>";
+	  } else {
+		 echo "<option  value=\"$item\">$item</option>"; 
+	  }
+}
+?>
+</select> 
+
+_(VM options)_:
+: <select name="sharesnapLogging">
+  <?=mk_option($var['sharesnapLogging'], "stop", _("Stop"))?>
+  <?=mk_option($var['sharesnapLogging'], "suspend", _("Suspend"))?>
+  </select>
+
+_(VM Delay)_:
+: <input type="text" name="newiqn" required value="" placeholder="Delay" />
+
+
+ _(Retention )_:
+
+: <select name="Removal">
+  <?=mk_option($var['sharesnapLogging'], "yes", _("Enabled"))?>
+  <?=mk_option($var['sharesnapLogging'], "no", _("Disabled"))?>
+  </select>
+
+   _(Days)_:
+: <input type="text" name="newiqn" required value="" placeholder="Days" />
+
+   _(Occurences)_:
+: <input type="text" name="newiqn" required value="" placeholder="Number of" />
+
+_(Remove Snaps/Sends )_:
+: <select name="sharesnapLogging">
+  <?=mk_option($var['sharesnapLogging'], "local", _("Local"))?>
+  <?=mk_option($var['sharesnapLogging'], "nonr", _("None"))?>
+  <?=mk_option($var['sharesnapLogging'], "both", _("Both"))?>
+  <?=mk_option($var['sharesnapLogging'], "remote", _("Remote"))?>
+  </select>
+
+
+
+<?endif;?>
+
+&nbsp;
+
+: <input type="submit" name="changesnap" value="_(Apply)_" disabled><input type="button" value="_(Done)_" onclick="done()">
+
+</form>
+
+<?endif;?>
