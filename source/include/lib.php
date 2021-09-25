@@ -24,6 +24,7 @@ define('DEFAULT_TARGETCLI_CONFIG', '{
 
 $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"subvol_settings"	=> "/tmp/{$plugin}/config/subvol.cfg",
+			"subvol_schedule"	=> "/tmp/{$plugin}/config/subvolsch.cfg",
 		];
 
 		
@@ -95,6 +96,22 @@ function set_subvol_config($sn, $var, $val) {
 	return (isset($config[$sn][$var])) ? $config[$sn][$var] : FALSE;
 }
 
+function get_subvol_schedule($sn) {
+	$config_file = $GLOBALS["paths"]["subvol_schedule"];
+	$config = @parse_ini_file($config_file, true);
+	#var_dump($config[$sn], $sn) ;
+	#return (isset($config[$sn])) ? html_entity_decode($config[$sn]) : FALSE;
+	return (isset($config[$sn])) ? $config[$sn] : FALSE;
+}
+
+function set_subvol_schedule($sn, $val) {
+	$config_file = $GLOBALS["paths"]["subvol_schedule"];
+	$config = @parse_ini_file($config_file, true);
+	#$config[$sn] = htmlentities($val, ENT_COMPAT);
+	$config[$sn] = $val ;
+	save_ini_file($config_file, $config);
+	return (isset($config[$sn][$var])) ? $config[$sn] : FALSE;
+}
 
 
 function get_unassigned_disks() {
@@ -586,6 +603,7 @@ function build_list2($lines) {
 		}
 		$btrfs_list = process_subvolumes($btrfs_list,$line,$btrfs_uuid) ;
 	}
+	ksort($btrfs_list, SORT_NATURAL) ;
 return($btrfs_list) ;
 
 }

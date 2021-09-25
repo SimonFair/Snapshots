@@ -88,6 +88,9 @@ function path_selected2() {
   var share2 = $("#subvolsendto").val();
   document.getElementById("subvolsendto").value = share2;
 }
+
+
+
 </script>
 
 
@@ -118,18 +121,19 @@ function path_selected2() {
 </tr>
 </table>
 <td><b>Snapshot Prefix</b></td>
-        <input type='text' size="15" class='setting' id="subvolprefix" placeholder=<?=$subvoldft;?>  data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected()" required>
+        <input type='text' size="15" class='setting' id="subvolprefix" placeholder="/mnt/cache/snaps/{YMD}" value="<?=htmlspecialchars($subvoldft)?>" data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected()" required>
     </td>
 
 
 <td><b>Send to location</b></td>
-        <input type='text' size="15" class='setting' id="subvolsendto" placeholder=<?=$snapto;?>  data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected2()" required>
+        <input type='text' size="15" class='setting' id="subvolsendto" placeholder="/mnt/cache/snaps_to"  value="<?=htmlspecialchars($snapto)?>" data-pickroot="/mnt/" data-pickfilter="HIDE_FILES_FILTER" data-pickfolders="true" autocomplete="off"  onchange="path_selected2()" required>
     </td>
 
 
 <?endif;?>
 
-: <input type="button" id="applyBtn" value="_(Apply)_" disabled><input type="button" value="_(Done)_" onclick="done()">
+
+<button type="button" onclick="done()">_(Done)_</button>
 
 </form>
 

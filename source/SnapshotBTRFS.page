@@ -1,5 +1,5 @@
 Menu="Snapshots"
-Title="Volumes"
+Title="BTRFS Volumes"
 icon="fa-file"
 ---
 <?PHP

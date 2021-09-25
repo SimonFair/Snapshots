@@ -199,8 +199,8 @@ case 'sv2':
          $parm="{$path}\",\"{$subvol}" ;
       
       echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
-      echo "<td><a href=\"Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
-      echo "<td><a href=\"Snapshots/SnapshotSchedule?s=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
+      echo "<td><a href=\"/Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
+      echo "<td><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
       echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -240,8 +240,13 @@ case 'sv2':
         
        # exec(' cat /mnt/cache/appdata/snapcmd/dflist ',$targetcli);
         exec(' df -t btrfs --output="target" ',$targetcli);
-            $list=build_list2($targetcli) ;
-      
+          
+            $list = @parse_ini_file("/tmp/snapshots/config/subvolsch.cfg", true) ;
+
+           echo "<tr><td>" ;
+           var_dump($list) ;
+           echo "</td></tr>" ;
+           $list=build_list2($targetcli) ;
            echo "<tr><td>" ;
            var_dump($list) ;
            echo "</td></tr>" ;
@@ -249,7 +254,7 @@ case 'sv2':
 
       case 'delete_subvolume':
          $subvol = urldecode(($_POST['subvol']));
-         exec('btrfs subvolume delete '.$subvol, $result, $error) ;
+         exec('btrfs subvolume delete '.escapeshellarg($subvol), $result, $error) ;
          #if
          snap_manager_log('btrfs subvolume delete '.$subvol.' '.$error.' '.$result[0]) ;
          echo json_encode(TRUE);
@@ -257,7 +262,7 @@ case 'sv2':
 
       case 'create_subvolume':
          $subvol = urldecode(($_POST['subvol']));
-         exec('btrfs subvolume create '.$subvol, $result, $error) ;
+         exec('btrfs subvolume create '.escapeshellarg($subvol), $result, $error) ;
          snap_manager_log('btrfs subvolume create '.$subvol.' '.$error.' '.$result[0]) ;
          echo json_encode(TRUE);
          break;
@@ -265,7 +270,7 @@ case 'sv2':
       case 'create_snapshot':
            $snapshot = urldecode(($_POST['snapshot']));
            $subvol = urldecode(($_POST['subvol']));
-           exec('btrfs subvolume snapshot '.$subvol.' '.$snapshot, $result, $error) ;
+           exec('btrfs subvolume snapshot '.escapeshellarg($subvol).' '.$snapshot, $result, $error) ;
            snap_manager_log('btrfs snapshot create '.$snapshot.' '.$error.' '.$result[0]) ;
            echo json_encode(TRUE);
            break;
@@ -273,7 +278,7 @@ case 'sv2':
            case 'send_snapshot':
             $snapshot = urldecode(($_POST['snapshot']));
             $subvol = urldecode(($_POST['subvol']));
-            exec('btrfs send '.$subvol.' | btrfs receive '.$snapshot, $result, $error) ;
+            exec('btrfs send '.$subvol.' | btrfs receive '.escapeshellarg($snapshot), $result, $error) ;
             snap_manager_log('btrfs snapshot send '.$snapshot.' '.$error.' '.$result[0]) ;
             echo json_encode(TRUE);
             break;
@@ -281,7 +286,7 @@ case 'sv2':
            case 'change_ro':
             $checked = urldecode(($_POST['checked']));
             $path = urldecode(($_POST['path']));
-            exec('btrfs property set '.$path.' ro '.$checked, $result, $error) ;
+            exec('btrfs property set '.escapeshellarg($path).' ro '.escapeshellarg($checked), $result, $error) ;
             snap_manager_log('btrfs property set '.$path.' '.$checked.' '.$error.' '.$result[0]) ;
             echo json_encode(TRUE);
             break;
@@ -301,6 +306,34 @@ case 'sv2':
                   snap_manager_log('btrfs update sendto path ' );
                   echo json_encode(TRUE);
                   break;
+
+               case 'applySchedule':
+                     $schedules = $_POST['schedule'];
+                     
+                     foreach ($schedules as $schedule) {
+                       $script = str_replace('"',"",$schedule[0]);
+                       $scriptSchedule['script'] = $script;
+                       $scriptSchedule['frequency'] = $schedule[1];
+                       $scriptSchedule['id'] = $schedule[2];
+                       $scriptSchedule['custom'] = $schedule[3];
+                       $newSchedule[$script] = $scriptSchedule;
+                       
+                       if ( $scriptSchedule['frequency'] == "custom" && $scriptSchedule['custom'] ) {
+                         $cronSchedule .= trim($scriptSchedule['custom'])." /usr/local/emhttp/plugins/snapshots/include/snapping.php $vol > /dev/null 2>&1\n";
+                       }
+                     }
+                     file_put_contents("/boot/config/plugins/user.scripts/schedule.json",json_encode($newSchedule,JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                     file_put_contents("/tmp/user.scripts/schedule.json",json_encode($newSchedule,JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                     if ( $cronSchedule ) {
+                       $cronSchedule ="# Generated cron schedule for user.scripts\n$cronSchedule\n";
+                       file_put_contents("/boot/config/plugins/user.scripts/customSchedule.cron",$cronSchedule);
+                     } else {
+                       @unlink("/boot/config/plugins/user.scripts/customSchedule.cron");
+                     }
+                     exec("/usr/local/sbin/update_cron");
+                     
+                     echo "Schedule Applied";
+                     break;
        
 
     

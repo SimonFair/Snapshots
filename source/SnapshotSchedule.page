@@ -26,24 +26,37 @@ require_once "$docroot/plugins/dynamix.vm.manager/include/libvirt_helpers.php";
 <?
 require_once("plugins/{$plugin}/include/lib.php");
 $setup = true;
-$cron = explode(' ',$var['sharesnapSchedule']);
-$move = $cron[2]!='*' ? 3 : ($cron[4]!='*' ? 2 : (substr($cron[1],0,1)!='*' ? 1 : 0));
-$mode = ['Hourly','Daily','Weekly','Monthly'];
-$days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
 $_SESSION['availablevms'] = $lv->get_domains();
 if (isset($_GET['s'])) {
 	$serial = $_GET['s'];
-
 	$width = "50%";
+$subvolsch = get_subvol_schedule($serial);
+#	$subvolsch=array() ;
 
-
-
-	$subvoldft = get_subvol_config($serial,"default");
-	$snapto = get_subvol_config($serial,"sendto");
-
-#$snapto = $subvoldft = "Test" ;
-
+#var_dump($serial) ;
+#var_dump($subvolsch) ;
 }
+
+
+$cfg =  $subvolsch ;
+$version = parse_ini_file("/etc/unraid-version");
+
+if (count($_POST)) {
+	if ($_POST['#apply'] == "_(Apply)_") {
+		array_map(function($k, $v) use (&$cfg) { if($k[0] != "#") $cfg[$k] = $v; }, array_keys($_POST), $_POST );
+		snap_manager_log("Updating snapshot settings...");
+		set_subvol_schedule($serial, $cfg);
+		snap_manager_log("snapshot settings updated.");
+    #reload() ;
+    $subvolsch = get_subvol_schedule($serial);
+	} 
+}
+
+$cron = explode(' ',$subvolsch['snapschedule']);
+$move = $cron[2]!='*' ? 3 : ($cron[4]!='*' ? 2 : (substr($cron[1],0,1)!='*' ? 1 : 0));
+$mode = ['Hourly','Daily','Weekly','Monthly','Disabled'];
+$days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 ?>
 
 
@@ -75,8 +88,9 @@ function presetsnap(form) {
   form.dotm.value = form.dotm.disabled ? '*' : (form.dotm.value=='*' ? 1 : form.dotm.value);
   if (mode==0) {$('#H1').hide(); $('#H2').show();} else {$('#H2').hide(); $('#H1').show();}
 }
+
 </script>
-<form markdown="1" name="snap_schedule" method="POST" action="/updatenone.htm" target="progressFrame" onsubmit="preparesnap(this)">
+<form markdown="1" name="snap_schedule" method="POST">
 <strong>_(SubVolume)_: </strong><?=$serial;?> 
 
 <?if ($setup):?>
@@ -132,40 +146,40 @@ _(Time of the day)_:
 :snap_time_of_the_day_help:
 
 _(Snap Schedule logging)_:
-: <select name="sharesnapLogging">
-  <?=mk_option($var['sharesnapLogging'], "yes", _("Enabled"))?>
-  <?=mk_option($var['sharesnapLogging'], "no", _("Disabled"))?>
+: <select name="snaplogging">
+  <?=mk_option($subvolsch['snaplogging'], "yes", _("Enabled"))?>
+  <?=mk_option($subvolsch['snaplogging'], "no", _("Disabled"))?>
   </select>
-
+&nbsp;_( Function not implemented.)_
 :snap_logging_help:
 
 _(Snap Send )_:
-: <select name="sharesnapLogging">
-  <?=mk_option($var['sharesnapLogging'], "local", _("Local"))?>
-  <?=mk_option($var['sharesnapLogging'], "no", _("Disabled"))?>
-  <?=mk_option($var['sharesnapLogging'], "remote", _("Remote"))?>
+: <select name="snapsend">
+  <?=mk_option($subvolsch['snapsend'], "local", _("Local"))?>
+  <?=mk_option($subvolsch['snapsend'], "no", _("Disabled"))?>
+  <?=mk_option($subvolsch['snapsend'], "remote", _("Remote"))?>
   </select>
+ &nbsp;_( Function not implemented.)_
 
 
-
- _(Remote Host)_:&nbsp;
-: <input type="text" name="newiqn" required value="" placeholder="Remote host ip/name" />
+ _(Remote Host)_:
+: <input type="text" name="remotehost"  value="<?=$subvolsch['remotehost']?>" placeholder="Remote host ip/name" class="narrow"/>_(Function not implemented.)_
 
   _(Snap Send Incremental)_:
-: <select name="sharesnapLogging">
-  <?=mk_option($var['sharesnapLogging'], "yes", _("Yes"))?>
-  <?=mk_option($var['sharesnapLogging'], "no", _("No"))?>
+: <select name="snapincremental">
+  <?=mk_option($subvolsch['snapincremental'], "yes", _("Yes"))?>
+  <?=mk_option($subvolsch['snapincremental'], "no", _("No"))?>
   </select>
-
+&nbsp;_( Function not implemented.)_
 
  
- _(Master Snap)_:&nbsp;
-: <input type="text" name="newiqn" required value="" placeholder="Previous" /> 
+ _(Master Snap)_:
+: <input type="text" name="mastersnap"  value="<?=$subvolsch['mastersnap']?>" placeholder="Previous" class="narrow"/> _(Function not implemented.)_
 
 
 
  Virtual Machine
-:   <select id="vmselection" name="vmselection" >
+:   <select id="vmselection" class="input.description" name="vmselection"   >
     <option value=""</option>
       <?php
 	 	$output = $_SESSION['availablevms'];
@@ -180,46 +194,55 @@ _(Snap Send )_:
 }
 ?>
 </select> 
+&nbsp;_( Function not implemented.)_
 
 _(VM options)_:
-: <select name="sharesnapLogging">
-  <?=mk_option($var['sharesnapLogging'], "stop", _("Stop"))?>
-  <?=mk_option($var['sharesnapLogging'], "suspend", _("Suspend"))?>
+
+: <select id="hostshutdown" name="hostoption">
+  <?=mk_option($subvolsch['hostoption'], 'shutdown', _('Shutdown VMs'))?>
+  <?=mk_option($subvolsch['hostoption'], 'hibernate', _('Hibernate VMs'))?>
+  <?=mk_option($subvolsch['hostoption'], 'suspend', _('Suspend VMs'))?>
   </select>
+&nbsp;_( Function not implemented.)_
 
-_(VM Delay)_:
-: <input type="text" name="newiqn" required value="" placeholder="Delay" />
+:vms_host_shutdown_help:
 
+_(VM shutdown time-out)_:
+: <input type="number" id="vm_shutdown_timeout" name="shutdowntimeout" value="<?=htmlspecialchars($domain_cfg['TIMEOUT'])?>" class="narrow">
+  <?if (!empty($subvolsch['shutdowntimeout']) && !empty($subvolsch['shutdowntimeout']) && (int)$subvolsch['shutdowntimeout'] > (int)$var['shutdownTimeout']):?>
+  <span id="arraystopped"><i class="fa fa-warning icon warning"></i> _(exceeds Disk Shutdown)_ <?=htmlspecialchars($var['shutdownTimeout'])?>s _(time-out)_ (<a href="/Settings/DiskSettings">_(edit)_</a>)</span>
+  <?endif;?>
+&nbsp;_( Function not implemented.)_
+
+:vms_shutdown_timeout_help:
 
  _(Retention )_:
 
 : <select name="Removal">
-  <?=mk_option($var['sharesnapLogging'], "yes", _("Enabled"))?>
-  <?=mk_option($var['sharesnapLogging'], "no", _("Disabled"))?>
-  </select>
+  <?=mk_option($subvolsch['snapremoval'], "yes", _("Enabled"))?>
+  <?=mk_option($subvolsch['snapremoval'], "no", _("Disabled"))?>
+  </select> &nbsp;_( Function not implemented.)_
 
    _(Days)_:
-: <input type="text" name="newiqn" required value="" placeholder="Days" />
+: <input type="text" name="days"  value="<?=$subvolsch['days']?>" placeholder="Days" class="narrow" />_(Function not implemented.)_
 
    _(Occurences)_:
-: <input type="text" name="newiqn" required value="" placeholder="Number of" />
+: <input type="text" name="occurences" value="<?=$subvolsch['occurences']?>" placeholder="Number of" class="narrow" />_(Function not implemented.)_
+
 
 _(Remove Snaps/Sends )_:
-: <select name="sharesnapLogging">
-  <?=mk_option($var['sharesnapLogging'], "local", _("Local"))?>
-  <?=mk_option($var['sharesnapLogging'], "nonr", _("None"))?>
-  <?=mk_option($var['sharesnapLogging'], "both", _("Both"))?>
-  <?=mk_option($var['sharesnapLogging'], "remote", _("Remote"))?>
+: <select name="snapsendopt">
+  <?=mk_option($subvolsch['snapsendopt'], "local", _("Local"))?>
+  <?=mk_option($subvolsch['snapsendopt'], "none", _("None"))?>
+  <?=mk_option($subvolsch['snapsendopt'], "both", _("Both"))?>
+  <?=mk_option($subvolsch['snapsendopt'], "remote", _("Remote"))?>
   </select>
-
+&nbsp;_( Function not implemented.)_
 
 
 <?endif;?>
-
 &nbsp;
-
-: <input type="submit" name="changesnap" value="_(Apply)_" disabled><input type="button" value="_(Done)_" onclick="done()">
-
+: <input type="submit" name="#apply" value='_(Apply)_'><input type="button" value="_(Done)_" onclick="done()">
 </form>
 
 <?endif;?>
