@@ -1,4 +1,4 @@
-Menu="SystemInformation"
+Menu="SnapshotInformation"
 Title="Snapshots"
 Icon="fa-file"
 Type="xmenu"

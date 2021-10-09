@@ -697,6 +697,9 @@ _(Snapshots BTRFS)_
 		</div>
 		<div data-question-content>
 			<input type="text" class="swal-content__input" name="sendsnap" value={1} placeholder="<?=_('Send to Snap Shot Name');?>" required>
+		<!--	<p><?=_('Send Incremental');?>:&nbsp;<input name ="incremental" type="checkbox"  value="true"> 
+			<input type="text" class="swal-content__input" name="sendsnapprev"  placeholder="<?=_('Initial Snapshot');?>" value="{Previous}" >
+			<input type='text' name='{1}' placeholder="<?=_('Click to select ISO file');?>" data-pickcloseonfile='true' data-pickfilter='iso' {0}='/mnt/user/isos/' data-pickfolders='true' required='required' class='swal-content__input' autocomplete="off" > -->
 			<p><?=_('Subvolume Name');?>:&nbsp;{0}</p>
 			
 		</div>
