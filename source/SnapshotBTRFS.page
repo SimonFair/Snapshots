@@ -660,10 +660,11 @@ _(Snapshots BTRFS)_
 <div style="display:none;" data-survey-name="create_snapshot" data-survey-title="">
 	<div data-question data-question-title="<?=_('Create Snapshot');?>" data-question-button-done="<?=_('Create');?>">
 		<div data-question-format>
-			[surveyOption.subvol,surveyOption.snap]
+			[surveyOption.subvol,surveyOption.snap, surveyOption.readonly]
 		</div>
 		<div data-question-content>
 			<input type="text" class="swal-content__input" name="snapshot" value={1} placeholder="<?=_('Snap Shot Name');?>" required>
+			<p><?=_('Create snapshot Readonly');?>:&nbsp;<input name ="readonly" type="checkbox" checked value="true"> 
 			<p><?=_('Subvolume Name');?>:&nbsp;{0}</p>
 			
 		</div>
@@ -673,7 +674,7 @@ _(Snapshots BTRFS)_
 		</div>
 	</div>
 	<div data-survey-done data-survey-done-wait="true">
-		$.post(SNAPURL, {table:"create_snapshot", subvol:surveyOption.subvol, snapshot:surveyData['snapshot']}).done(function(data)
+		$.post(SNAPURL, {table:"create_snapshot", subvol:surveyOption.subvol, snapshot:surveyData['snapshot'], readonly:surveyData['readonly']}).done(function(data)
 		{
 			usb_disks(tab_usbdisks);
 			swalShowResult((data == "true") ? true : false);

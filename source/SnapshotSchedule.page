@@ -53,9 +53,10 @@ if (count($_POST)) {
 	} 
 }
 
-$cron = explode(' ',$subvolsch['snapschedule']);
+$cron = explode(' ',$subvolsch['cron']);
+#$cron = explode(' ',"0 * * * *" );
 $move = $cron[2]!='*' ? 3 : ($cron[4]!='*' ? 2 : (substr($cron[1],0,1)!='*' ? 1 : 0));
-$mode = ['Hourly','Daily','Weekly','Monthly','Disabled'];
+$mode = ['Hourly','Daily','Weekly','Monthly'];
 $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 ?>
 
@@ -93,8 +94,14 @@ function presetsnap(form) {
 <form markdown="1" name="snap_schedule" method="POST">
 <strong>_(SubVolume)_: </strong><?=$serial;?> 
 
-<?if ($setup):?>
 _(Snap schedule)_:
+: <select name="snapscheduleenabled" >
+  <?=mk_option($subvolsch['snapscheduleenabled'], "yes", _("Enabled"))?>
+  <?=mk_option($subvolsch['snapscheduleenabled'], "no", _("Disabled"))?>
+  </select>
+
+<?if ($setup):?>
+_(Snap schedule mode)_:
 : <select name="sharesnapSchedule" onchange="presetsnap(this.form)">
   <?for ($m=0; $m<count($mode); $m++):?>
   <?=mk_option($move, strval($m), _($mode[$m]))?>
@@ -108,7 +115,7 @@ _(Day of the week)_:
   <?for ($d=0; $d<count($days); $d++):?>
   <?=mk_option($cron[4], strval($d), _($days[$d],0))?>
   <?endfor;?>
-  <?=mk_option($cron[4], "*", "--------", "disabled")?>
+  <?=mk_option($subvolsch['day'], "*", "--------", "disabled")?>
   </select>
 
 :snap_day_of_the_week_help:
@@ -118,7 +125,7 @@ _(Day of the month)_:
   <?for ($d=1; $d<=31; $d++):?>
   <?=mk_option($cron[2], strval($d), sprintf("%02d", $d))?>
   <?endfor;?>
-  <?=mk_option($cron[2], "*", "--------", "disabled")?>
+  <?=mk_option($subvolsch['dotm'], "*", "--------", "disabled")?>
   </select>
 
 :snap_day_of_the_month_help:
@@ -174,7 +181,7 @@ _(Snap Send )_:
 
  
  _(Master Snap)_:
-: <input type="text" name="mastersnap"  value="<?=$subvolsch['mastersnap']?>" placeholder="Previous" class="narrow"/> _(Function not implemented.)_
+: <input type="text" name="mastersnap"  value="<?=$subvolsch['mastersnap']?>" placeholder="Previous" class="narrow"/>_(Function not implemented.)_
 
 
 
@@ -212,7 +219,7 @@ _(VM shutdown time-out)_:
   <?if (!empty($subvolsch['shutdowntimeout']) && !empty($subvolsch['shutdowntimeout']) && (int)$subvolsch['shutdowntimeout'] > (int)$var['shutdownTimeout']):?>
   <span id="arraystopped"><i class="fa fa-warning icon warning"></i> _(exceeds Disk Shutdown)_ <?=htmlspecialchars($var['shutdownTimeout'])?>s _(time-out)_ (<a href="/Settings/DiskSettings">_(edit)_</a>)</span>
   <?endif;?>
-&nbsp;_( Function not implemented.)_
+_(Function not implemented.)_
 
 :vms_shutdown_timeout_help:
 

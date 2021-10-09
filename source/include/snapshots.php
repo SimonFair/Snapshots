@@ -176,14 +176,14 @@ case 'sv2':
 
       if (isset($volsettings[$path])) {
          $subvoldft = $volsettings[$path]["default"] ;
-      } else { $subvoldft = "{YMD}" ;}
+      } else { $subvoldft = _("Undefined") ;}
          echo '<td>' ;
          echo $subvoldft ;
          echo "</td>" ;
 
          if (isset($volsettings[$path])) {
             $subvolsendto = $volsettings[$path]["sendto"] ;
-         } else { $subvolsendto = "/mnt/cache/snaps" ;}
+         } else { $subvolsendto = _("Undefined") ;}
          echo '<td>' ;
          echo $subvolsendto ;
          echo "</td>" ;
@@ -195,12 +195,35 @@ case 'sv2':
          echo "<td title='"._("Delete Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
          $mpoint			.= "<i class='fa fa-pencil partition-hdd'></i><a title='"._("Change Disk Mount Point")."' class='exec' onclick='chg_mountpoint(\"{$partition['serial']}\",\"{$partition['part']}\",\"{$device}\",\"{$partition['fstype']}\",\"{$mount_point}\",\"{$disk_label}\");'>{$mount_point}</a>";
          $mpoint			.= "{$rm_partition}</span>";
-         $subvol=$path.'{YMD}' ;
+         if ($subvoldft != _("Undefined")) {
+            $subvol=$subvoldft ;
+         } else {
+         $subvol=$path ;
+         }
          $parm="{$path}\",\"{$subvol}" ;
       
       echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
       echo "<td><a href=\"/Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
-      echo "<td><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
+
+      # Set Orb Colour based on Schedule status, Green enabled, Red Disabled, Grey not definded.
+
+      $schedule_state=get_subvol_sch_config($path, "snapscheduleenabled") ;
+      switch($schedule_state)  {
+         case 'yes' :
+               $colour = "green" ; 
+               $colour_lable="Enabled" ;
+               break ;
+         case 'no' :   
+            $colour = "red" ;
+            $colour_lable="Disabled";
+             break ;
+         default :   
+            $colour = "grey" ;
+            $colour_lable="Undefined";
+            break ;
+      } 
+      #$colour="grey" ;
+      echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
       echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -218,6 +241,11 @@ case 'sv2':
             echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
             echo '</td>' ;
             $dftsend = "/mnt/VMs/test" ;
+            if ($subvolsendto != _("Undefined")) {
+               $dftsend=$subvolsendto ;
+            } else {
+            $dftsend=$path ;
+            }
             $parm="{$path}\",\"{$dftsend}" ;
             echo "</td><td> ".make_button("Send/Receive", "send_snapshot", $parm)."</td><td></td><td></td>" ;
             #<i class='fa fa-usb' aria-hidden=true></i>
@@ -270,7 +298,11 @@ case 'sv2':
       case 'create_snapshot':
            $snapshot = urldecode(($_POST['snapshot']));
            $subvol = urldecode(($_POST['subvol']));
-           exec('btrfs subvolume snapshot '.escapeshellarg($subvol).' '.$snapshot, $result, $error) ;
+           $readonly = urldecode(($_POST['readonly']));
+           if ($readonly == "true")  $readonly = "-r" ; else $readonly="" ;
+           $ymd = gmdate('ymdhis', time());
+           $snapshoty = str_replace("{YMD}", $ymd, $snapshot);
+           exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty), $result, $error) ;
            snap_manager_log('btrfs snapshot create '.$snapshot.' '.$error.' '.$result[0]) ;
            echo json_encode(TRUE);
            break;
@@ -286,6 +318,7 @@ case 'sv2':
            case 'change_ro':
             $checked = urldecode(($_POST['checked']));
             $path = urldecode(($_POST['path']));
+            snap_manager_log('btrfs property set '.$path) ;
             exec('btrfs property set '.escapeshellarg($path).' ro '.escapeshellarg($checked), $result, $error) ;
             snap_manager_log('btrfs property set '.$path.' '.$checked.' '.$error.' '.$result[0]) ;
             echo json_encode(TRUE);

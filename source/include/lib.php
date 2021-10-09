@@ -108,10 +108,79 @@ function set_subvol_schedule($sn, $val) {
 	$config_file = $GLOBALS["paths"]["subvol_schedule"];
 	$config = @parse_ini_file($config_file, true);
 	#$config[$sn] = htmlentities($val, ENT_COMPAT);
+	$time  = $val['hour2'] ?? '* *';
+    $dotm  = $val['dotm'] ?? '*';
+    $month = $val['month'] ?? '*';
+    $day   = $val['day'] ?? '*';
+	switch ($val["sharesnapSchedule"]) {
+		case 0: 
+			$val["cron"] = "$time * * * *" ;
+			break;
+		case 1: 
+			$val["cron"] = "$time * * $day *" ;
+			break;
+		case 2: 
+			$val["cron"] = "$time * * $day *" ;
+			break;	
+		case 3: 
+			$val["cron"] = "$time * * $day *" ;
+			break;	
+		}
+	
 	$config[$sn] = $val ;
 	save_ini_file($config_file, $config);
 	return (isset($config[$sn][$var])) ? $config[$sn] : FALSE;
 }
+
+function get_subvol_sch_config($sn, $var) {
+	$config_file = $GLOBALS["paths"]["subvol_schedule"];
+	$config = @parse_ini_file($config_file, true);
+	return (isset($config[$sn][$var])) ? html_entity_decode($config[$sn][$var]) : FALSE;
+}
+
+#require_once "$docroot/webGui/include/Wrappers.php";
+/*
+function cron_sch($schedule) {
+
+  $cron = "";
+  if ($schedule['mode']>0) {
+    $time  = $schedule['hour'] ?? '* *';
+    $dotm  = $schedule['dotm'] ?? '*';
+    $month = $schedule['month'] ?? '*';
+    $day   = $schedule['day'] ?? '*';
+    $term  = '';
+    switch ($dotm) {
+      case '28-31': 
+        $term = '[[ $(date +%e -d +1day) -eq 1 ]] && ';
+        break;
+      case 'W1'   :
+        $dotm = '*';
+        $term = '[[ $(date +%e) -le 7 ]] && ';
+        break;
+      case 'W2'   :
+        $dotm = '*';
+        $term = '[[ $(date +%e -d -7days) -le 7 ]] && ';
+        break;
+      case 'W3'   :
+        $dotm = '*';
+        $term = '[[ $(date +%e -d -14days) -le 7 ]] && ';
+        break;
+      case 'W4'   : 
+        $dotm = '*';
+        $term = '[[ $(date +%e -d -21days) -le 7 ]] && ';
+        break;
+      case 'WL'   : 
+        $dotm = '*';
+        $term = '[[ $(date +%e -d +7days) -le 7 ]] && ';
+        break;
+    }
+    $cron = "# Generated parity check schedule:\n$time $dotm $month $day $term/usr/local/sbin/mdcmd check $write &> /dev/null || :\n\n";
+  }
+  parse_cron_cfg("snapshots", urlencode($schdule["path"]), $cron);
+  
+} 
+} 
+ */
 
 
 function get_unassigned_disks() {
@@ -528,7 +597,7 @@ function process_subvolumes($btrfs_list,$line, $uuid){
 				$subvol = "~INCREMENTAL" ;
 			} else { $inremental = NULL ;}
 
-				
+			if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,9 ) ;				
 		 
 		 	$btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = [		
 		 	'uuid' =>$arrMatch['uuid'],
@@ -539,6 +608,7 @@ function process_subvolumes($btrfs_list,$line, $uuid){
 			'otime' => $arrMatch['otime'],
 			'vol' => $line,
 			'incremental' => $incremental,
+			'path' => $arrMatch["path"] 
 		  	];
 
 			# Get ro status
@@ -574,12 +644,16 @@ function build_list2($lines) {
 
 					#echo "<tr><td>" ;var_dump($arrMatch) ;echo "</td></tr>" ;
 
+					#if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,9 ) ;
+					#$arrMatch["path"][0] = "A" ; 
+
 					$btrfs_list[$line][$arrMatch["path"]] = [		
 					'uuid' =>$arrMatch['uuid'],
 					'puuid' =>$arrMatch['puuid'],
 					'ruuid' => $arrMatch['ruuid'],
 					'snap' => false,
 					'vol' => $line,
+					'path' => $arrMatch["path"] 
 					];
 
 					$btrfs_uuid[$arrMatch['uuid']] = $arrMatch["path"] ;
