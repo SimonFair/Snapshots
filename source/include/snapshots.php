@@ -247,7 +247,8 @@ case 'sv2':
             $dftsend=$path ;
             }
             $parm="{$path}\",\"{$dftsend}" ;
-            echo "</td><td> ".make_button("Send/Receive", "send_snapshot", $parm)."</td><td></td><td></td>" ;
+          #  echo "</td><td> ".make_button("Send", "send_snapshot", $parm).make_button("Send Incremental", "send_inc_snapshot", $parm)."</td><td></td><td></td>" ;
+            echo "</td><td> ".make_button("Send", "send_snapshot", $parm)."</td><td></td><td></td>" ;
             #<i class='fa fa-usb' aria-hidden=true></i>
          
             echo "<td><a href=\"Snapshots/Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($path)."\"></i></a></td></tr>";

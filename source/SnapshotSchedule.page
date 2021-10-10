@@ -58,6 +58,9 @@ $cron = explode(' ',$subvolsch['cron']);
 $move = $cron[2]!='*' ? 3 : ($cron[4]!='*' ? 2 : (substr($cron[1],0,1)!='*' ? 1 : 0));
 $mode = ['Hourly','Daily','Weekly','Monthly'];
 $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+if (!isset($subvolsch['snapscheduleenabled'])) { $subvolsch['snapscheduleenabled'] = "no" ; $setup=false ;} else $setup=true ;
+#var_dump($cron) ;
+$setup=true ;
 ?>
 
 
@@ -70,10 +73,10 @@ $(function() {
 <? endif; ?>
 // Fool Unraid by simulating the original input field
 function preparesnap(form) {
-  var mode = form.sharesnapSchedule.value;
+  var mode = form.snapSchedule.value;
   var min = mode!=0 ? form.min.value : 0;
   var hour = mode!=0 ? form.hour1.value : form.hour2.value;
-  form.sharesnapSchedule.options[mode].value = min+' '+hour+' '+form.dotm.value+' * '+form.day.value;
+  form.snapSchedule.options[mode].value = min+' '+hour+' '+form.dotm.value+' * '+form.day.value;
   form.min.disabled = true;
   form.hour1.disabled = true;
   form.hour2.disabled = true;
@@ -81,7 +84,7 @@ function preparesnap(form) {
   form.day.disabled = true;
 }
 function presetsnap(form) {
-  var mode = form.sharesnapSchedule.value;
+  var mode = form.snapSchedule.value;
   form.min.disabled = false;
   form.day.disabled = mode!=2;
   form.dotm.disabled = mode!=3;
@@ -102,7 +105,7 @@ _(Snap schedule)_:
 
 <?if ($setup):?>
 _(Snap schedule mode)_:
-: <select name="sharesnapSchedule" onchange="presetsnap(this.form)">
+: <select name="snapSchedule" onchange="presetsnap(this.form)">
   <?for ($m=0; $m<count($mode); $m++):?>
   <?=mk_option($move, strval($m), _($mode[$m]))?>
   <?endfor;?>

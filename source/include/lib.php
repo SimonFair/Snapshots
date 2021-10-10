@@ -13,6 +13,7 @@ $plugin = "snapshots";
 $docroot = $docroot ?: @$_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
 $disks = @parse_ini_file("$docroot/state/disks.ini", true);
 $VERBOSE=FALSE; 
+require_once "$docroot/webGui/include/Wrappers.php";
 
 /* For when the config file doesn't exist
  * on flash storage */
@@ -107,28 +108,38 @@ function get_subvol_schedule($sn) {
 function set_subvol_schedule($sn, $val) {
 	$config_file = $GLOBALS["paths"]["subvol_schedule"];
 	$config = @parse_ini_file($config_file, true);
-	#$config[$sn] = htmlentities($val, ENT_COMPAT);
-	$time  = $val['hour2'] ?? '* *';
+	#$val = htmlentities($val, ENT_COMPAT);
+	$hour2 = $val['hour2'] ?? '*';
     $dotm  = $val['dotm'] ?? '*';
     $month = $val['month'] ?? '*';
     $day   = $val['day'] ?? '*';
-	switch ($val["sharesnapSchedule"]) {
-		case 0: 
-			$val["cron"] = "$time * * * *" ;
+	$hour  = $val['hour1'] ?? '*';
+	$min   = $val['min'] ?? '*';
+		
+	switch ($val["snapSchedule"]) {
+		case "0": 
+			$val["cron"] = "0 $hour2 * * *" ;
 			break;
-		case 1: 
-			$val["cron"] = "$time * * $day *" ;
+		case "1": 
+			$val["cron"] = "$min $hour * * *" ;
 			break;
-		case 2: 
-			$val["cron"] = "$time * * $day *" ;
+		case "2": 
+			$val["cron"] = "$min $hour * * $day" ;
 			break;	
-		case 3: 
-			$val["cron"] = "$time * * $day *" ;
+		case "3": 
+			$val["cron"] = "$min $hour $dotm * *" ;
 			break;	
 		}
-	
+	#var_dump($val) ;
 	$config[$sn] = $val ;
 	save_ini_file($config_file, $config);
+	if ($config[$sn]["snapscheduleenabled"] == "yes") {
+	$cron = "# Generated snapshot schedule for:$sn\n".$val["cron"]." /usr/local/emhttp/plugins/snapshots/include/snapping.php \"$sn\" > /dev/null 2>&1 \n\n"; }
+	else {
+	$cron="" ;
+	}
+	parse_cron_cfg("snapshots", urlencode($sn), $cron);
+
 	return (isset($config[$sn][$var])) ? $config[$sn] : FALSE;
 }
 
@@ -138,8 +149,17 @@ function get_subvol_sch_config($sn, $var) {
 	return (isset($config[$sn][$var])) ? html_entity_decode($config[$sn][$var]) : FALSE;
 }
 
-#require_once "$docroot/webGui/include/Wrappers.php";
+
+
+
 /*
+
+function parse_cron_cfg($plugin, $job, $text = "") {
+  $cron = "/boot/config/plugins/$plugin/$job.cron";
+  if ($text) file_put_contents($cron, $text); else @unlink($cron);
+  exec("/usr/local/sbin/update_cron");
+}
+
 function cron_sch($schedule) {
 
   $cron = "";

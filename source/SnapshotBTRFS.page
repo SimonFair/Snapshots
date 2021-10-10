@@ -725,6 +725,41 @@ _(Snapshots BTRFS)_
 	</div>
 </div>
 
+<div style="display:none;" data-survey-name="send_inc_snapshot" data-survey-title="">
+	<div data-question data-question-title="<?=_('Send Snapshot');?>" data-question-button-done="<?=_('Send');?>">
+		<div data-question-format>
+			[surveyOption.subvol,surveyOption.sendsnap]
+		</div>
+		<div data-question-content>
+			<input type="text" class="swal-content__input" name="sendsnap" value={1} placeholder="<?=_('Send to Snap Shot Name');?>" required>
+		<p><?=_('Send Incremental');?>:&nbsp;<input name ="incremental" type="checkbox"  value="true"> 
+			<input type="text" class="swal-content__input" name="sendsnapprev"  placeholder="<?=_('Initial Snapshot');?>" value="{Previous}" >
+			<input type='text' name='{1}' placeholder="<?=_('Click to select ISO file');?>" data-pickcloseonfile='true' data-pickfilter='iso' {0}='/mnt/user/isos/' data-pickfolders='true' required='required' class='swal-content__input' autocomplete="off" > 
+			<p><?=_('Subvolume Name');?>:&nbsp;{0}</p>
+			
+		</div>
+		<div data-question-load></div>
+		<div data-question-done>
+			(surveyData["sendsnap"].length)
+		</div>
+	</div>
+	<div data-survey-done data-survey-done-wait="true">
+		$.post(SNAPURL, {table:"send_snapshot", subvol:surveyOption.subvol, snapshot:surveyData['sendsnap']}).done(function(data)
+		{
+			usb_disks(tab_usbdisks);
+			swalShowResult((data == "true") ? true : false);
+		},"json").fail(function(){swalShowResult(false);});
+		parent.window.location.reload() ;
+	</div>
+	<div>
+		<script type="text/javascript">
+			$(function() {
+				window.send_inc_snapshot = function(subvol, sendsnap){dousbipDevicesSurvey("send_inc_snapshot",{subvol:subvol,sendsnap:sendsnap});}
+			});
+		</script>
+	</div>
+</div>
+
 <div style="display:none;" data-survey-name="delete_snapshot" data-survey-title="<?=_('delete snapshot');?>">
 	<div data-question data-question-title="" data-question-button-done="<?=_('Delete');?>" data-question-icon="warning">
 		<div data-question-format>
