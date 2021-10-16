@@ -593,6 +593,36 @@ return($btrfs_list) ;
 
 }
 
+function get_snapshots($subvol){
+	# Process Snapshots
+	#
+		$vol=NULL ;
+		exec('btrfs subvolume list  -s '.$subvol,$vol);
+		$btrfs_snaps_path = NULL ;
+	
+		foreach ($vol as $vline) {
+	
+	
+			#echo "<tr><td>" ;echo preg_match('/^ID parent_uuid (?P<puuid>\S+) uuid (?P<uuid>\S+): path (?P<path>\S+)(?P<name>.*)$/', $vline, $arrMatch) ; echo "</td></tr>" ;
+			if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} top level \d{1,25} otime (?P<odate>\S+) (?P<otime>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
+	
+
+				if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,9 ) ;				
+			 
+				 $btrfs_snaps_path[$arrMatch["path"]] = [		
+				'odate' => 	$arrMatch['odate'],
+				'otime' => $arrMatch['otime'],
+				 ];
+	
+
+				
+			}
+		}
+		return($btrfs_snaps_path) ;
+	}
+	
+	
+
 function process_subvolumes($btrfs_list,$line, $uuid){
 # Process Snapshots
 #
@@ -615,7 +645,7 @@ function process_subvolumes($btrfs_list,$line, $uuid){
 			if ($ruuid != "-" ) {
 				$incremental = $subvol ;
 				$subvol = "~INCREMENTAL" ;
-			} else { $inremental = NULL ;}
+			} else { $incremental = NULL ;}
 
 			if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,9 ) ;				
 		 

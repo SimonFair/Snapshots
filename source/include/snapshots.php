@@ -25,7 +25,7 @@ if ($translations) {
 require_once "plugins/snapshots/include/lib.php";
 require_once("webGui/include/Helpers.php");
 
-function make_button($text, $function, $entry) {
+function make_button($text, $function, $entry,$disabled="") {
 #	global $paths, $Preclear , $loaded_vhci_hcd, $usbip_cmds_exist ;
 
 	$button = "<span><button  onclick='%s(\"%s\")' class='mount' context='%s' role='%s' %s ><i class='%s'></i>%s</button></span>";
@@ -212,18 +212,27 @@ case 'sv2':
          case 'yes' :
                $colour = "green" ; 
                $colour_lable="Enabled" ;
+               $run_disabled = "" ;
                break ;
          case 'no' :   
             $colour = "red" ;
             $colour_lable="Disabled";
+            $run_disabled = "disabled";
              break ;
          default :   
             $colour = "grey" ;
             $colour_lable="Undefined";
+            $run_disabled = "disabled";
             break ;
       } 
       #$colour="grey" ;
-      echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
+      echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a>" ;
+     # echo "<a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_schedule(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
+      
+      #echo "<td title='"._("Delete Schedule")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a></td>" ;
+
+      echo make_button("Run Now", "run_schedule", $parm, $run_disabled) ;
+      echo "</td>" ;
       echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -271,9 +280,9 @@ case 'sv2':
         exec(' df -t btrfs --output="target" ',$targetcli);
           
             $list = @parse_ini_file("/tmp/snapshots/config/subvolsch.cfg", true) ;
-
+          $list=get_snapshots("/mnt/cache/vol") ;
            echo "<tr><td>" ;
-           var_dump($list) ;
+           var_dump(array_reverse($list)) ;
            echo "</td></tr>" ;
            $list=build_list2($targetcli) ;
            echo "<tr><td>" ;
@@ -301,7 +310,7 @@ case 'sv2':
            $subvol = urldecode(($_POST['subvol']));
            $readonly = urldecode(($_POST['readonly']));
            if ($readonly == "true")  $readonly = "-r" ; else $readonly="" ;
-           $ymd = gmdate('ymdhis', time());
+           $ymd = date('YmdHis', time());
            $snapshoty = str_replace("{YMD}", $ymd, $snapshot);
            exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty), $result, $error) ;
            snap_manager_log('btrfs snapshot create '.$snapshot.' '.$error.' '.$result[0]) ;
