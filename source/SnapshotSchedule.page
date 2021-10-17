@@ -229,9 +229,9 @@ _(Function not implemented.)_
  _(Retention )_:
 
 : <select name="Removal">
-  <?=mk_option($subvolsch['Removal'], "yes", _("Enabled"))?>
   <?=mk_option($subvolsch['Removal'], "no", _("Disabled"))?>
   <?=mk_option($subvolsch['Removal'], "dry", _("Dry Run"))?>
+  <?=mk_option($subvolsch['Removal'], "yes", _("Enabled"))?>
   </select>
 
    _(Days)_:

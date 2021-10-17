@@ -647,7 +647,7 @@ function process_subvolumes($btrfs_list,$line, $uuid){
 				$subvol = "~INCREMENTAL" ;
 			} else { $incremental = NULL ;}
 
-			if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,9 ) ;				
+			if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,10 ) ;				
 		 
 		 	$btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = [		
 		 	'uuid' =>$arrMatch['uuid'],
@@ -683,7 +683,7 @@ function build_list2($lines) {
 		
 		$vol=NULL ;
 		#exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
-		exec('btrfs subvolume list  -puqcgaR '.$line,$vol);
+		exec('btrfs subvolume list  -apuqcgR '.$line,$vol);
 		$btrfs_path = NULL ;
 		#$vol = NULL ;
 		if ($vol != NULL) {
@@ -694,7 +694,7 @@ function build_list2($lines) {
 
 					#echo "<tr><td>" ;var_dump($arrMatch) ;echo "</td></tr>" ;
 
-					#if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,9 ) ;
+			#		if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,10 ) ;
 					#$arrMatch["path"][0] = "A" ; 
 
 					$btrfs_list[$line][$arrMatch["path"]] = [		
@@ -731,6 +731,116 @@ function build_list2($lines) {
 return($btrfs_list) ;
 
 }
+
+function build_list3($line) {
+	$btrfs_list = array() ;
+	$btrfs_uuid = array() ;
+	#foreach ($lines as $line) {
+	#	if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
+		
+		$vol=NULL ;
+		#exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
+		exec('btrfs subvolume list  -puqcgR '.$line,$vol);
+		$btrfs_path = NULL ;
+		#$vol = NULL ;
+		if ($vol != NULL) {
+			foreach ($vol as $vline) {
+
+				#echo "<tr><td>" ;echo preg_match('/^ID parent_uuid (?P<puuid>\S+) uuid (?P<uuid>\S+): path (?P<path>\S+)(?P<name>.*)$/', $vline, $arrMatch) ; echo "</td></tr>" ;
+				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
+
+					#echo "<tr><td>" ;var_dump($arrMatch) ;echo "</td></tr>" ;
+
+					#if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,10 ) ;
+					#$arrMatch["path"][0] = "A" ; 
+					$path=$line.'/'.$arrMatch["path"] ;
+					$btrfs_list[$line][$path] = [		
+					'uuid' =>$arrMatch['uuid'],
+					'puuid' =>$arrMatch['puuid'],
+					'ruuid' => $arrMatch['ruuid'],
+					'snap' => false,
+					'vol' => $line,
+					'path' => $path ,
+					'short_vol' => $arrMatch["path"]
+					];
+
+					$btrfs_uuid[$arrMatch['uuid']] = $path;
+
+					# Get ro status
+					$ro=null ;
+					exec('btrfs property get  '.$path,$ro);
+					foreach ($ro as $roline) {
+						$rosplit=explode("=", $roline)	 ;
+						$btrfs_list[$line][$path]["property"][$rosplit[0]] = $rosplit[1] ;
+					}
+				}
+			}
+		} else 
+		{
+			$btrfs_list[$line] =  NULL ;/*[		
+
+			'snap' => false,
+			'vol' => $line,
+			]; */
+		}
+		#var_dump($btrfs_uuid) ;
+		$btrfs_list = process_subvolumes3($btrfs_list,$line,$btrfs_uuid) ;
+	#}
+	ksort($btrfs_list, SORT_NATURAL) ;
+return($btrfs_list) ;
+
+}
+function process_subvolumes3($btrfs_list,$line, $uuid){
+	# Process Snapshots
+	#
+		$vol=NULL ;
+		exec('btrfs subvolume list  -spuqcgR '.$line,$vol);
+		$btrfs_path = NULL ;
+	
+		foreach ($vol as $vline) {
+	
+	
+			#echo "<tr><td>" ;echo preg_match('/^ID parent_uuid (?P<puuid>\S+) uuid (?P<uuid>\S+): path (?P<path>\S+)(?P<name>.*)$/', $vline, $arrMatch) ; echo "</td></tr>" ;
+			if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} otime (?P<odate>\S+) (?P<otime>\S+) parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
+	
+				   #echo "<tr><td>" ;var_dump($arrMatch) ;echo "</td></tr>" ;
+				 unset(  $btrfs_list[$line][$arrMatch["path"]] );
+	
+				$subvol = $uuid[$arrMatch['puuid']] ;
+				$ruuid =  $arrMatch['ruuid'] ;
+				if ($subvol == NULL) $subvol = "~NONE" ; 
+				if ($ruuid != "-" ) {
+					$incremental = $subvol ;
+					$subvol = "~INCREMENTAL" ;
+				} else { $incremental = NULL ;}
+	
+				#if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,10 ) ;				
+			 
+				 $btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = [		
+				 'uuid' =>$arrMatch['uuid'],
+				   'puuid' =>$arrMatch['puuid'],
+				   'ruuid' => $arrMatch['ruuid'],
+				   'snap' => true,
+				'odate' => 	$arrMatch['odate'],
+				'otime' => $arrMatch['otime'],
+				'vol' => $line,
+				'incremental' => $incremental,
+				'path' => $arrMatch["path"] 
+				  ];
+	
+				# Get ro status
+				$ro=null ;
+				exec('btrfs property get  '.$line.'/'.$arrMatch["path"],$ro);
+					foreach ($ro as $roline) {
+						$rosplit=explode("=", $roline)	 ;
+						$btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]]["property"][$rosplit[0]] = $rosplit[1] ;
+					} 
+				
+			}
+		}
+		return($btrfs_list) ;
+	}
+	
 
 function subvol_parents() {
 	$btrfs_list = array() ;

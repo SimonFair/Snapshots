@@ -109,6 +109,7 @@ if ($dummyrun == true)
 	if ($logging == "yes")	snap_manager_log('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)) ;
   } else {
 	exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty), $result, $error) ;
+	if ($logging == "yes") snap_manager_log('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)) ;
   }
 
  /* Restart VMs */ 
@@ -124,9 +125,16 @@ if ($dummyrun == true)
 if ($schedule["Removal"]!="no") {
 $parents=subvol_parents() ;
 $parent=$parents[$subvol]["vol"].'/' ;
-
-$snaps=array_reverse(get_snapshots($subvol)) ;
+$lines[]=$parent ;
+$list = build_list3($parents[$subvol]["vol"]) ;
+#var_dump($list) ;
+$list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
+var_dump($list) ;
+$snaps=array_reverse($list) ;
+var_dump($snaps) ;
 if ($logging == "yes") snap_manager_log('Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"]) ;
+$prevdate = date('l jS F (Y-m-d)', strtotime('-'.$schedule["days"].' days'));
+if ($logging == "yes") snap_manager_log('Date to remove to:'.$prevdate) ;
 $count = 0 ;
 if ($schedule["occurences"] > 0)
 	{

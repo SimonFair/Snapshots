@@ -284,14 +284,14 @@ case 'sv2':
           
             $list = @parse_ini_file("/tmp/snapshots/config/subvolsch.cfg", true) ;
           $list=get_snapshots("/mnt/cache/vol") ;
-          $list=subvol_parents() ;
+          $list=build_list3("/mnt/cache") ;
            echo "<tr><td>" ;
            var_dump(array_reverse($list)) ;
            echo "</td></tr>" ;
-           $list=build_list2($targetcli) ;
-           echo "<tr><td>" ;
-           var_dump($list) ;
-           echo "</td></tr>" ;
+        #   $list=build_list2($targetcli) ;
+         #  echo "<tr><td>" ;
+          # var_dump($list) ;
+          # echo "</td></tr>" ;
            break;
 
       case 'run_schedule':
