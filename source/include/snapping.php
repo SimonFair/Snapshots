@@ -110,6 +110,10 @@ if ($dummyrun == true)
 
 /* Delete old snaps */
 
+if ($schedule["Removal"]!="no") {
+$parents=subvol_parents() ;
+$parent=$parents[$subvol]["vol"].'/' ;
+
 $snaps=array_reverse(get_snapshots($subvol)) ;
 snap_manager_log('Count: '.count($snaps)) ;
 $count = 0 ;
@@ -117,18 +121,18 @@ if ($schedule["occurences"] > 0)
 	{
   	foreach($snaps as $path=>$snap) {
 		if ($count < $schedule["occurences"] ) { $count++ ; continue ;}
-
-		if ($dummyrundel == true)
+        $path = $parent.$path ;
+		if ($schedule["Removal"] == "dry")
   		{
 			/* Process with no Actions but write logging.*/
 			snap_manager_log('Dry Run Delete '.$path) ;
   		} else {
-			exec('btrfs subvolume delete '.escapeshellarg($subvol.$path). $result, $error) ;
-			snap_manager_log('Deleted Snapshot: '.$subvol.$path) ;
+			exec('btrfs subvolume delete '.escapeshellarg($path), $result, $error) ;
+			snap_manager_log('Deleted Snapshot: '.$path) ;
   		}
 		  $count++ ;
 	}
 }
-
+}
 snap_manager_log('End snapping process '.$arg1 ) ;
 ?>

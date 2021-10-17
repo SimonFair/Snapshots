@@ -281,6 +281,7 @@ case 'sv2':
           
             $list = @parse_ini_file("/tmp/snapshots/config/subvolsch.cfg", true) ;
           $list=get_snapshots("/mnt/cache/vol") ;
+          $list=subvol_parents() ;
            echo "<tr><td>" ;
            var_dump(array_reverse($list)) ;
            echo "</td></tr>" ;
@@ -290,13 +291,21 @@ case 'sv2':
            echo "</td></tr>" ;
            break;
 
-      case 'delete_subvolume':
+      case 'run_schedule':
          $subvol = urldecode(($_POST['subvol']));
-         exec('btrfs subvolume delete '.escapeshellarg($subvol), $result, $error) ;
+         exec('/usr/local/emhttp/plugins/snapshots/include/snapping.php "'.$subvol.'" > /dev/null 2>&1 ', $result, $error) ;
          #if
-         snap_manager_log('btrfs subvolume delete '.$subvol.' '.$error.' '.$result[0]) ;
+         snap_manager_log('Manual Run "'.$subvol.'" '.$error.' '.$result[0]) ;
          echo json_encode(TRUE);
          break;
+        
+         case 'delete_subvolume':
+            $subvol = urldecode(($_POST['subvol']));
+            exec('btrfs subvolume delete '.escapeshellarg($subvol), $result, $error) ;
+            #if
+            snap_manager_log('btrfs subvolume delete '.$subvol.' '.$error.' '.$result[0]) ;
+            echo json_encode(TRUE);
+            break;   
 
       case 'create_subvolume':
          $subvol = urldecode(($_POST['subvol']));

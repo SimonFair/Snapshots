@@ -151,6 +151,19 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 		});
 	}
 
+		function run_schedule(subvol) {
+		/* add spinning and disable button */
+
+	
+		$.post(SNAPURL,{'table':'run_schedule','subvol':subvol}).done(function(data)
+		{
+
+		/* $("button[device='"+device+"']").html(" "+(op == "bind" ? "<?=_('Unbind');?>" : "<?=_('attach');?>"));*/
+		
+		
+		});
+	}
+
 
 	function usbip_attach(el, op, device) {
 		/* add spinning and disable button */

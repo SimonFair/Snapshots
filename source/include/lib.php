@@ -731,3 +731,37 @@ function build_list2($lines) {
 return($btrfs_list) ;
 
 }
+
+function subvol_parents() {
+	$btrfs_list = array() ;
+	$btrfs_uuid = array() ;
+	exec(' df -t btrfs --output="target" ',$lines);
+	foreach ($lines as $line) {
+		if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
+		
+		$vol=NULL ;
+		#exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
+		exec('btrfs subvolume list  -puqcgaR '.$line,$vol);
+		$btrfs_path = NULL ;
+		#$vol = NULL ;
+		if ($vol != NULL) {
+			foreach ($vol as $vline) {
+
+				#echo "<tr><td>" ;echo preg_match('/^ID parent_uuid (?P<puuid>\S+) uuid (?P<uuid>\S+): path (?P<path>\S+)(?P<name>.*)$/', $vline, $arrMatch) ; echo "</td></tr>" ;
+				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
+                    $key=$line.'/'.$arrMatch["path"] ;
+					$btrfs_list[$key] = [		
+					'vol' => $line,
+						];
+
+
+	
+				}
+			}
+		} 
+	}
+	ksort($btrfs_list, SORT_NATURAL) ;
+return($btrfs_list) ;
+
+}
+

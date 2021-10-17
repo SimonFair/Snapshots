@@ -229,15 +229,16 @@ _(Function not implemented.)_
  _(Retention )_:
 
 : <select name="Removal">
-  <?=mk_option($subvolsch['snapremoval'], "yes", _("Enabled"))?>
-  <?=mk_option($subvolsch['snapremoval'], "no", _("Disabled"))?>
-  </select> &nbsp;_( Function not implemented.)_
+  <?=mk_option($subvolsch['Removal'], "yes", _("Enabled"))?>
+  <?=mk_option($subvolsch['Removal'], "no", _("Disabled"))?>
+  <?=mk_option($subvolsch['Removal'], "dry", _("Dry Run"))?>
+  </select>
 
    _(Days)_:
 : <input type="text" name="days"  value="<?=$subvolsch['days']?>" placeholder="Days" class="narrow" />_(Function not implemented.)_
 
    _(Occurences)_:
-: <input type="text" name="occurences" value="<?=$subvolsch['occurences']?>" placeholder="Number of" class="narrow" />_(Function not implemented.)_
+: <input type="text" name="occurences" value="<?=$subvolsch['occurences']?>" placeholder="Number of" class="narrow" />
 
 
 _(Remove Snaps/Sends )_:
