@@ -70,7 +70,18 @@ $logging = $schedule['snaplogging'] ;
 if yes log steps, otherwise just log start/stop.
 */
 
+# Is snapping already running.
+$pidfile= '/var/run/snap'.urlencode($subvol).'.pid' ;
+$pid = file_exists($pidfile) ;
+if ($pid) {
+	snap_manager_log('Snapping process already running for'.$arg1 ) ;
+	return(-1) ;
+}
+
 snap_manager_log('Start snapping process '.$arg1 ) ;
+
+# Write pid file
+file_put_contents($pidfile, "Pid") ;
 
 /* Process VM Options if VMs defined 
 Shutdown, Suspend, Hibernate.
@@ -80,7 +91,7 @@ Shutdown, Suspend, Hibernate.
 if ($dummyrun == true)
   {
 	# Process with no Actions but write logging.
-	#snap_manager_log('Action') ;
+	#if ($logging == "yes") snap_manager_log('Action') ;
   } else {
 	# Perform Action.  
 	
@@ -95,7 +106,7 @@ $snapshoty = str_replace("{YMD}", $ymd, $snapshot);
 if ($dummyrun == true)
   {
 	/* Process with no Actions but write logging.*/
-	snap_manager_log('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)) ;
+	if ($logging == "yes")	snap_manager_log('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)) ;
   } else {
 	exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty), $result, $error) ;
   }
@@ -115,7 +126,7 @@ $parents=subvol_parents() ;
 $parent=$parents[$subvol]["vol"].'/' ;
 
 $snaps=array_reverse(get_snapshots($subvol)) ;
-snap_manager_log('Count: '.count($snaps)) ;
+if ($logging == "yes") snap_manager_log('Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"]) ;
 $count = 0 ;
 if ($schedule["occurences"] > 0)
 	{
@@ -125,14 +136,16 @@ if ($schedule["occurences"] > 0)
 		if ($schedule["Removal"] == "dry")
   		{
 			/* Process with no Actions but write logging.*/
-			snap_manager_log('Dry Run Delete '.$path) ;
+			if ($logging == "yes") snap_manager_log('Dry Run Delete '.$path) ;
   		} else {
 			exec('btrfs subvolume delete '.escapeshellarg($path), $result, $error) ;
-			snap_manager_log('Deleted Snapshot: '.$path) ;
+			if ($logging == "yes") snap_manager_log('Deleted Snapshot: '.$path) ;
   		}
 		  $count++ ;
 	}
 }
 }
+sleep(30) ;
+unlink($pidfile) ;
 snap_manager_log('End snapping process '.$arg1 ) ;
 ?>

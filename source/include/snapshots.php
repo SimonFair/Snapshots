@@ -230,8 +230,11 @@ case 'sv2':
      # echo "<a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_schedule(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
       
       #echo "<td title='"._("Delete Schedule")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a></td>" ;
-
-      echo make_button("Run Now", "run_schedule", $parm, $run_disabled) ;
+      $pid = file_exists('/var/run/snap'.urlencode($path).'.pid') ;
+      #$pid =true ;
+      if ($pid) {
+         echo make_button("Running", "run_schedule", $parm, 'disabled') ;
+      } else  echo make_button("Run Now", "run_schedule", $parm, $run_disabled) ;
       echo "</td>" ;
       echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
          
