@@ -85,7 +85,7 @@ chmod 755 -R /usr/local/emhttp/plugins/&name; 2>/dev/null
 chmod +x /usr/local/emhttp/plugins/&name;/scripts/* /usr/local/emhttp/plugins/&name;/event/*
 
 # Copy Config to tmp 
-at -M -f /tmp/start_usb_manager now 2>/dev/null
+at -M -f /tmp/start_snapshots now 2>/dev/null
 
 echo 
 echo "-----------------------------------------------------------"
