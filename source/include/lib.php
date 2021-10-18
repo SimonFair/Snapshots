@@ -732,15 +732,15 @@ return($btrfs_list) ;
 
 }
 
-function build_list3($line) {
+function build_list3($lines) {
 	$btrfs_list = array() ;
 	$btrfs_uuid = array() ;
-	#foreach ($lines as $line) {
-	#	if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
+	foreach ($lines as $line) {
+		if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
 		
 		$vol=NULL ;
 		#exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
-		exec('btrfs subvolume list  -puqcgR '.$line,$vol);
+		exec('btrfs subvolume list  -opuqcgR '.$line,$vol);
 		$btrfs_path = NULL ;
 		#$vol = NULL ;
 		if ($vol != NULL) {
@@ -785,7 +785,7 @@ function build_list3($line) {
 		}
 		#var_dump($btrfs_uuid) ;
 		$btrfs_list = process_subvolumes3($btrfs_list,$line,$btrfs_uuid) ;
-	#}
+	}
 	ksort($btrfs_list, SORT_NATURAL) ;
 return($btrfs_list) ;
 
@@ -804,7 +804,7 @@ function process_subvolumes3($btrfs_list,$line, $uuid){
 			if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} otime (?P<odate>\S+) (?P<otime>\S+) parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
 	
 				   #echo "<tr><td>" ;var_dump($arrMatch) ;echo "</td></tr>" ;
-				 unset(  $btrfs_list[$line][$arrMatch["path"]] );
+				 unset(  $btrfs_list[$line][$line.'/'.$arrMatch["path"]] );
 	
 				$subvol = $uuid[$arrMatch['puuid']] ;
 				$ruuid =  $arrMatch['ruuid'] ;

@@ -126,12 +126,14 @@ if ($schedule["Removal"]!="no") {
 $parents=subvol_parents() ;
 $parent=$parents[$subvol]["vol"].'/' ;
 $lines[]=$parent ;
-$list = build_list3($parents[$subvol]["vol"]) ;
-#var_dump($list) ;
+exec(' df -t btrfs --output="target" ',$df);
+
+$list = build_list3($df) ;
+#var_dump($df) ;
 $list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
-var_dump($list) ;
+#var_dump($list) ;
 $snaps=array_reverse($list) ;
-var_dump($snaps) ;
+#var_dump($snaps) ;
 if ($logging == "yes") snap_manager_log('Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"]) ;
 $prevdate = date('l jS F (Y-m-d)', strtotime('-'.$schedule["days"].' days'));
 if ($logging == "yes") snap_manager_log('Date to remove to:'.$prevdate) ;

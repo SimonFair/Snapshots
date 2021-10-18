@@ -151,7 +151,7 @@ case 'sv2':
    echo "</tr></thead>";
    echo "<tbody><tr>";
    exec(' df -t btrfs --output="target" ',$targetcli);
-   $list=build_list2($targetcli) ;
+   $list=build_list3($targetcli) ;
    # echo "<tr><td>" ;var_dump( $btrfs_volumes) ;echo "</td></tr>" ;
 
             
@@ -163,11 +163,11 @@ case 'sv2':
       echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><td></td></td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
       $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
       if ($vline != NULL) {
-         foreach ($vline as $snap=>$snapdetail) {
+         foreach ($vline as $snapkey=>$snapdetail) {
          # echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',$vline)."</td></tr>";
          if ($snapdetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
         
-
+         $snap=$snapdetail["short_vol"] ;
          echo "<tr><td>\t".$snap.'</td>' ;
          #echo "<td>" ;
          #echo '   <input type="checkbox" class="iscsi'.$dname.'" value="'.$iscsiset.'" </td>'  ;
@@ -284,7 +284,7 @@ case 'sv2':
           
             $list = @parse_ini_file("/tmp/snapshots/config/subvolsch.cfg", true) ;
           $list=get_snapshots("/mnt/cache/vol") ;
-          $list=build_list3("/mnt/cache") ;
+          $list=build_list3($targetcli) ;
            echo "<tr><td>" ;
            var_dump(array_reverse($list)) ;
            echo "</td></tr>" ;
