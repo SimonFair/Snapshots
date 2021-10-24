@@ -135,9 +135,32 @@ $list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
 $snaps=array_reverse($list) ;
 #var_dump($snaps) ;
 if ($logging == "yes") snap_manager_log('Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"]) ;
-$prevdate = date('l jS F (Y-m-d)', strtotime('-'.$schedule["days"].' days'));
-if ($logging == "yes") snap_manager_log('Date to remove to:'.$prevdate) ;
+
+
+
+
+if ($schedule["days"] > 0) {
+	$prevdatelog = date('l jS F (Y-m-d)', strtotime('-'.$schedule["days"].' days'));
+	$prevdate = date('Y-m-d', strtotime('-'.$schedule["days"].' days'));
+	if ($logging == "yes") snap_manager_log('Date to remove to:'.$prevdatelog) ;
+	foreach($snaps as $path=>$snap) {
+		if ($snap['odate'] > $prevdate )  continue ;
+        $path = $parent.$path ;
+		if ($schedule["Removal"] == "dry")
+  		{
+			/* Process with no Actions but write logging.*/
+			if ($logging == "yes") snap_manager_log('Dry Run Delete by date '.$path) ;
+  		} else {
+			exec('btrfs subvolume delete '.escapeshellarg($path), $result, $error) ;
+			if ($logging == "yes") snap_manager_log('Deleted Snapshot by date: '.$path) ;
+  		}
+	}
+}
+
+
 $count = 0 ;
+
+
 if ($schedule["occurences"] > 0)
 	{
   	foreach($snaps as $path=>$snap) {
@@ -146,10 +169,10 @@ if ($schedule["occurences"] > 0)
 		if ($schedule["Removal"] == "dry")
   		{
 			/* Process with no Actions but write logging.*/
-			if ($logging == "yes") snap_manager_log('Dry Run Delete '.$path) ;
+			if ($logging == "yes") snap_manager_log('Dry Run Delete by occurence'.$path) ;
   		} else {
 			exec('btrfs subvolume delete '.escapeshellarg($path), $result, $error) ;
-			if ($logging == "yes") snap_manager_log('Deleted Snapshot: '.$path) ;
+			if ($logging == "yes") snap_manager_log('Deleted Snapshot by occurence: '.$path) ;
   		}
 		  $count++ ;
 	}

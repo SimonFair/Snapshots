@@ -46,6 +46,7 @@ if (count($_POST)) {
 	if ($_POST['#apply'] == "_(Apply)_") {
 		array_map(function($k, $v) use (&$cfg) { if($k[0] != "#") $cfg[$k] = $v; }, array_keys($_POST), $_POST );
 		snap_manager_log("Updating snapshot settings...");
+  #  var_dump($cfg) ;  
 		set_subvol_schedule($serial, $cfg);
 		snap_manager_log("snapshot settings updated.");
     #reload() ;
@@ -59,7 +60,7 @@ $move = $cron[2]!='*' ? 3 : ($cron[4]!='*' ? 2 : (substr($cron[1],0,1)!='*' ? 1 
 $mode = ['Hourly','Daily','Weekly','Monthly'];
 $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 if (!isset($subvolsch['snapscheduleenabled'])) { $subvolsch['snapscheduleenabled'] = "no" ; $setup=false ;} else $setup=true ;
-#var_dump($cron) ;
+
 $setup=true ;
 ?>
 
@@ -69,6 +70,7 @@ $setup=true ;
 <? if ($setup == true):?>
 $(function() {
   presetsnap(document.snap_schedule);
+  $("#vmselection").dropdownchecklist({ emptyText: 'None', width: 166, explicitClose: '...close' });
 });
 <? endif; ?>
 // Fool Unraid by simulating the original input field
@@ -82,7 +84,7 @@ function preparesnap(form) {
   form.hour2.disabled = true;
   form.dotm.disabled = true;
   form.day.disabled = true;
-}
+ }
 function presetsnap(form) {
   var mode = form.snapSchedule.value;
   form.min.disabled = false;
@@ -92,6 +94,8 @@ function presetsnap(form) {
   form.dotm.value = form.dotm.disabled ? '*' : (form.dotm.value=='*' ? 1 : form.dotm.value);
   if (mode==0) {$('#H1').hide(); $('#H2').show();} else {$('#H2').hide(); $('#H1').show();}
 }
+
+    
 
 </script>
 <form markdown="1" name="snap_schedule" method="POST">
@@ -189,22 +193,19 @@ _(Snap Send )_:
 
 
  Virtual Machine
-:   <select id="vmselection" class="input.description" name="vmselection"   >
-    <option value=""</option>
+:   <select id="vmselection" class="input.description" name="vmselection[]" multiple="multiple" style="display">
+   
       <?php
 	 	$output = $_SESSION['availablevms'];
 	    
       foreach($output as $item){
-		  
-      if ($item === $vm) {
-      echo "<option selected=\"selected\" value=\"$item\">$item</option>";
-	  } else {
-		 echo "<option  value=\"$item\">$item</option>"; 
-	  }
+		       
+      $checked = in_array($item,explode(',',$subvolsch["vmselection"])) ? " selected" : "";
+      echo "<option value='$item'$checked >$item</option>";
 }
 ?>
 </select> 
-&nbsp;_( Function not implemented.)_
+
 
 _(VM options)_:
 
