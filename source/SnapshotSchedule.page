@@ -30,11 +30,13 @@ $setup = true;
 $_SESSION['availablevms'] = $lv->get_domains();
 if (isset($_GET['s'])) {
 	$serial = $_GET['s'];
+  	$seq = $_GET['seq'];
 	$width = "50%";
-$subvolsch = get_subvol_schedule($serial);
+#$subvolsch = get_subvol_schedule($serial);
+$subvolsch = get_subvol_schedule_json($serial);
 #	$subvolsch=array() ;
 
-#var_dump($serial) ;
+#var_dump($seq) ;
 #var_dump($subvolsch) ;
 }
 
@@ -47,10 +49,13 @@ if (count($_POST)) {
 		array_map(function($k, $v) use (&$cfg) { if($k[0] != "#") $cfg[$k] = $v; }, array_keys($_POST), $_POST );
 		snap_manager_log("Updating snapshot settings...");
   #  var_dump($cfg) ;  
-		set_subvol_schedule($serial, $cfg);
+		#set_subvol_schedule($serial, $cfg);
+    set_subvol_schedule_json($serial, $cfg ,0);
 		snap_manager_log("snapshot settings updated.");
     #reload() ;
-    $subvolsch = get_subvol_schedule($serial);
+    #$subvolsch = get_subvol_schedule($serial);
+    $subvolsch = get_subvol_schedule_json($serial,0);
+    #$subvolsch = $subvolsch[0] ;
 	} 
 }
 
@@ -71,6 +76,7 @@ $setup=true ;
 $(function() {
   presetsnap(document.snap_schedule);
   $("#vmselection").dropdownchecklist({ emptyText: 'None', width: 166, explicitClose: '...close' });
+    $("#excd").dropdownchecklist({ emptyText: 'None', width: 166, explicitClose: '...close' });
 });
 <? endif; ?>
 // Fool Unraid by simulating the original input field
@@ -158,6 +164,23 @@ _(Time of the day)_:
   </select></span>
 
 :snap_time_of_the_day_help:
+
+_(Exclude Dates)_:
+: <select name="excd[]" id="excd" class="input.description" multiple="multiple" style="display">
+ <?php
+	 	$output = $days;
+	    
+      foreach($output as $item){
+		       
+      $checked = in_array($item,explode(',',$subvolsch["excd"])) ? " selected" : "";
+      echo "<option value='$item'$checked >$item</option>";
+}
+?>
+  <?=mk_option($subvolsch['excd'], "*", "--------", "disabled")?>
+  </select>
+    &nbsp;_( Function not implemented.)_
+
+:snap_excluded_days_help:
 
 _(Snap Schedule logging)_:
 : <select name="snaplogging">

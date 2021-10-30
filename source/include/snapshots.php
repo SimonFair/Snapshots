@@ -207,7 +207,8 @@ case 'sv2':
 
       # Set Orb Colour based on Schedule status, Green enabled, Red Disabled, Grey not definded.
 
-      $schedule_state=get_subvol_sch_config($path, "snapscheduleenabled") ;
+      #$schedule_state=get_subvol_sch_config($path, "snapscheduleenabled") ;
+      $schedule_state=get_subvol_sch_config_json($path, "snapscheduleenabled") ;
       switch($schedule_state)  {
          case 'yes' :
                $colour = "green" ; 
@@ -226,7 +227,8 @@ case 'sv2':
             break ;
       } 
       #$colour="grey" ;
-      echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a>" ;
+      $seq=0 ;
+      echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode($seq)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a>" ;
      # echo "<a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_schedule(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
       
       #echo "<td title='"._("Delete Schedule")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a></td>" ;
@@ -285,13 +287,17 @@ case 'sv2':
             $list = @parse_ini_file("/tmp/snapshots/config/subvolsch.cfg", true) ;
           $list=get_snapshots("/mnt/cache/vol") ;
           $list=build_list3($targetcli) ;
+          $config_file = $GLOBALS["paths"]["subvol_schedule"];
+          $config_file_json = $GLOBALS["paths"]["subvol_schedule.json"];
+          $config = @parse_ini_file($config_file, true);
+          $list= json_decode(file_get_contents($config_file_json), true) ;
            echo "<tr><td>" ;
-           var_dump(array_reverse($list)) ;
+           var_dump(($list)) ;
            echo "</td></tr>" ;
-        #   $list=build_list2($targetcli) ;
-         #  echo "<tr><td>" ;
-          # var_dump($list) ;
-          # echo "</td></tr>" ;
+           $list=build_list2($targetcli) ;
+           echo "<tr><td>" ;
+           var_dump($config) ;
+           echo "</td></tr>" ;
            break;
 
       case 'run_schedule':

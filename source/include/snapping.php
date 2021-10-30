@@ -87,6 +87,16 @@ file_put_contents($pidfile, "Pid") ;
 Shutdown, Suspend, Hibernate.
 
 */
+$vms=explode(",", $schedule["vmselection"]) ;
+$vm_state=array() ;
+foreach($vms as $vm) {
+	$vm_output=NULL ;
+	exec ('virsh domstate "'.$vm.'"', $vm_output) ;
+	$vm_state[$vm] = $vm_output[0] ;
+}
+var_dump($vm_state) ;
+
+
 
 if ($dummyrun == true)
   {
@@ -140,11 +150,11 @@ if ($logging == "yes") snap_manager_log('Count: '.count($snaps).' Occurences: '.
 
 
 if ($schedule["days"] > 0) {
-	$prevdatelog = date('l jS F (Y-m-d)', strtotime('-'.$schedule["days"].' days'));
-	$prevdate = date('Y-m-d', strtotime('-'.$schedule["days"].' days'));
+	$prevdatelog = date('l jS F (Y-m-d-H-i-s)', strtotime('-'.$schedule["days"].' days'));
+	$prevdate = date('Y-m-d-H-i-s', strtotime('-'.$schedule["days"].' days'));
 	if ($logging == "yes") snap_manager_log('Date to remove to:'.$prevdatelog) ;
 	foreach($snaps as $path=>$snap) {
-		if ($snap['odate'] > $prevdate )  continue ;
+		if ($snap['odate'].'-'.$snap['otime'] > $prevdate )  continue ;
         $path = $parent.$path ;
 		if ($schedule["Removal"] == "dry")
   		{

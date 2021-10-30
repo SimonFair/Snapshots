@@ -26,6 +26,7 @@ define('DEFAULT_TARGETCLI_CONFIG', '{
 $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"subvol_settings"	=> "/tmp/{$plugin}/config/subvol.cfg",
 			"subvol_schedule"	=> "/tmp/{$plugin}/config/subvolsch.cfg",
+			"subvol_schedule.json"	=> "/tmp/{$plugin}/config/subvolsch.cfg",
 		];
 
 		
@@ -61,6 +62,21 @@ function save_ini_file($file, $array) {
 	$file_path = pathinfo($file);
 	if ($file_path['extension'] == "cfg") {
 		file_put_contents("/boot/config/plugins/".$plugin."/".basename($file), implode(PHP_EOL, $res));
+	}
+}
+
+function save_json_file($file, $array) {
+	global $plugin;
+
+
+
+	/* Write changes to tmp file. */
+	file_put_contents($file,  json_encode($array,JSON_PRETTY_PRINT));
+
+	/* Write changes to flash. */
+	$file_path = pathinfo($file);
+	if ($file_path['extension'] == "cfg") {
+		file_put_contents("/boot/config/plugins/".$plugin."/".basename($file), json_encode($array, JSON_PRETTY_PRINT));
 	}
 }
 
@@ -107,7 +123,9 @@ function get_subvol_schedule($sn) {
 
 function set_subvol_schedule($sn, $val) {
 	$config_file = $GLOBALS["paths"]["subvol_schedule"];
+	#$config_file_json = $GLOBALS["paths"]["subvol_schedule.json"];
 	$config = @parse_ini_file($config_file, true);
+	#$config_json = @json_decode(file_get_contents($config_file_json) ,true) ;
 	#$val = htmlentities($val, ENT_COMPAT);
 	$hour2 = $val['hour2'] ?? '*';
     $dotm  = $val['dotm'] ?? '*';
@@ -132,8 +150,11 @@ function set_subvol_schedule($sn, $val) {
 		}
 	#var_dump($val) ;
 	$val['vmselection'] = implode("," , $val['vmselection']) ;
+	$val['excd'] = implode("," , $val['excd']) ;
 	$config[$sn] = $val ;
+	#$config_json[$sn] = $val ;
 	save_ini_file($config_file, $config);
+	#save_json_file($config_file_json, $config_json) ;
 	if ($config[$sn]["snapscheduleenabled"] == "yes") {
 	$cron = "# Generated snapshot schedule for:$sn\n".$val["cron"]." /usr/local/emhttp/plugins/snapshots/include/snapping.php \"$sn\" > /dev/null 2>&1 \n\n"; }
 	else {
@@ -142,6 +163,64 @@ function set_subvol_schedule($sn, $val) {
 	parse_cron_cfg("snapshots", urlencode($sn), $cron);
 
 	return (isset($config[$sn][$var])) ? $config[$sn] : FALSE;
+}
+
+function get_subvol_schedule_json($sn,$seq=0) {
+	$config_file_json = $GLOBALS["paths"]["subvol_schedule.json"];
+	$config =  @json_decode(file_get_contents($config_file_json) , true);
+	#var_dump($config[$sn], $sn) ;
+	#return (isset($config[$sn])) ? html_entity_decode($config[$sn]) : FALSE;
+	return (isset($config[$sn][$seq])) ? $config[$sn][$seq] : FALSE;
+}
+
+function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
+	
+	$config_file_json = $GLOBALS["paths"]["subvol_schedule.json"];
+	
+	$config = @json_decode(file_get_contents($config_file_json) ,true) ;
+	#$val = htmlentities($val, ENT_COMPAT);
+	$hour2 = $val['hour2'] ?? '*';
+    $dotm  = $val['dotm'] ?? '*';
+    $month = $val['month'] ?? '*';
+    $day   = $val['day'] ?? '*';
+	$hour  = $val['hour1'] ?? '*';
+	$min   = $val['min'] ?? '*';
+		
+	switch ($val["snapSchedule"]) {
+		case "0": 
+			$val["cron"] = "0 $hour2 * * *" ;
+			break;
+		case "1": 
+			$val["cron"] = "$min $hour * * *" ;
+			break;
+		case "2": 
+			$val["cron"] = "$min $hour * * $day" ;
+			break;	
+		case "3": 
+			$val["cron"] = "$min $hour $dotm * *" ;
+			break;	
+		}
+	#var_dump($val) ;
+	$val['vmselection'] = implode("," , $val['vmselection']) ;
+	$val['excd'] = implode("," , $val['excd']) ;
+	$config[$sn][$schedule_seq] = $val ;
+
+	save_json_file($config_file_json, $config) ;
+	if ($config[$sn]["snapscheduleenabled"] == "yes") {
+	$cron = "# Generated snapshot schedule for:$sn\n".$val["cron"]." /usr/local/emhttp/plugins/snapshots/include/snapping.php \"$sn\" > /dev/null 2>&1 \n\n"; }
+	else {
+	$cron="" ;
+	}
+	parse_cron_cfg("snapshots", urlencode($sn), $cron);
+
+	return (isset($config[$sn][$var])) ? $config[$sn] : FALSE;
+}
+
+function get_subvol_sch_config_json($sn, $var,$seq=0) {
+	$config_file_json = $GLOBALS["paths"]["subvol_schedule.json"];
+	
+	$config = @json_decode(file_get_contents($config_file_json) ,true) ;
+	return (isset($config[$sn][$seq][$var])) ? html_entity_decode($config[$sn][$seq][$var]) : FALSE;
 }
 
 function get_subvol_sch_config($sn, $var) {
