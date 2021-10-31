@@ -272,27 +272,22 @@ case 'sv2':
       }
       echo "<td></td></tr>" ;
 
- #     $add_toggle = true;
- #     if (! $disk['show_partitions']) {
- #        $hdd_serial .="<span title ='"._("Click to view/hide partitions and mount points")."' class='exec toggle-hdd' hdd='{$disk_name}'><i class='fa fa-plus-square fa-append'></i></span>";
- #     } else {
- #        $hdd_serial .="<span><i class='fa fa-minus-square fa-append grey-orb'></i></span>";
- #     }
- #  } else {
- #     $add_toggle = false;
- #     $hdd_serial .= "<span class='toggle-hdd' hdd='{$disk_name}'></span>";
- #  }
-      $toggle = "<span class='exec toggle-snapshots' snapvol='Test'><i class='fa fa-minus-square fa-append'></i></span>" ;
-      echo "<tr><td>\t".$snap.' '.$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
-      $snapvol="Test" ;
+      $snapvol=$snap;
+      $snapvol=str_replace( "/", "-", $snapvol) ;
+      $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
+      echo "<tr><td>\t".$snap.$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
             if ($subvoldetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
             #(! $disk['show_partitions']) || $disk['partitions'][0]['pass_through'] ? $style = "style='display:none;'" : $style = "";
             $style = "style='display:none;'" ;
             $style ="" ;
-            echo "<tr class=toggle-parts toggle-snaps-".basename($snapvol)."' name='toggle-snaps-".basename($snapvol)."' $style><td>\t\t".$subvolname.'</td>' ;
-            echo '<td>' ;
+           # echo "<tr class=toggle-parts toggle-snaps-".basename($snapvol)."' name='toggle-snaps-".basename($snapvol)."' $style><td>\t\t".$subvolname.'</td>' ;
+            #$style = "style='display:none;' " ;
+            $hostport = $snapvol ;
+            echo "<tr class='toggle-parts toggle-rmtip-".$hostport."' name='toggle-rmtip-".$hostport."'".$style.">" ;
+            echo "<td>\t\t".$subvolname."</td><td></td>" ;
             #echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Send Path" ' ;
             if ($subvoldetail["incremental"] != "" ) echo 'Parent:'.$subvoldetail["incremental"] ;
             echo "</td>" ;

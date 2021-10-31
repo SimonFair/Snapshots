@@ -81,19 +81,7 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 
 
 
-	/* Remove or hide diskio toggle */
-	tabElement = get_tab_title_by_name("<?=_('BTRFS Volumes')?>");
-	if (tabElement.prop("nodeName") == "DIV")
-	{
-		tabElement.addClass("disable_diskio");
-	 	$(function()
-	 	{
-	 		tabElement.find("i.toggle").remove();
-	 	});
-	} else if (tabElement.prop("nodeName") == "INPUT")
-	{
-		tabElement.bind({click:function() {$('i.toggle').hide('slow');}});
-	}
+
 
 	$("#sv2").arrive("tr",{onceOnly:false},function()
 	{
@@ -111,9 +99,21 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 				}
 			});
 		});
-	});
 
-      
+
+			tr.find("span.toggle-rmtip").click(function(e)
+		{
+			$(this).disableSelection();hostport = $(this).attr("snapvol");el = $(this);
+			$(".toggle-rmtip-"+hostport).slideToggle(0,function(){
+				if ( $("tr.toggle-rmtip-"+hostport+":first").is(":visible") ){
+					el.find(".fa-append").addClass("fa-minus-square").removeClass("fa-plus-square");
+				} else {
+					el.find(".fa-append").removeClass("fa-minus-square").addClass("fa-plus-square");
+				}
+			});
+		});
+
+      });
 });
 
 
