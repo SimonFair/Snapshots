@@ -79,25 +79,43 @@ $(function(){
 $('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2'});  
 $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});  
 
-      
-});
+
+
+	/* Remove or hide diskio toggle */
+	tabElement = get_tab_title_by_name("<?=_('BTRFS Volumes')?>");
+	if (tabElement.prop("nodeName") == "DIV")
+	{
+		tabElement.addClass("disable_diskio");
+	 	$(function()
+	 	{
+	 		tabElement.find("i.toggle").remove();
+	 	});
+	} else if (tabElement.prop("nodeName") == "INPUT")
+	{
+		tabElement.bind({click:function() {$('i.toggle').hide('slow');}});
+	}
 
 	$("#sv2").arrive("tr",{onceOnly:false},function()
 	{
 		tr = $(this);
 
 	
-		tr.find("span.toggle-snap").click(function(e)
+		tr.find("span.toggle-snapshots").click(function(e)
 		{
-			$(this).disableSelection();disk = $(this).attr("snapvol");el = $(this);
-			$(".toggle-"+snapvol).slideToggle(0);
+			$(this).disableSelection();hostport = $(this).attr("snapvol");el = $(this);
+			$(".toggle-snaps-"+hostport).slideToggle(0,function(){
+				if ( $("tr.toggle-snaps-"+hostport+":first").is(":visible") ){
+					el.find(".fa-append").addClass("fa-minus-square").removeClass("fa-plus-square");
+				} else {
+					el.find(".fa-append").removeClass("fa-minus-square").addClass("fa-plus-square");
+				}
+			});
 		});
-		tr.find( "button[role$=mount]" ).on( "click", function()
-		{
-			disk_op(this, $(this).attr("role"), $(this).attr("device"));
-		});
-		tr.find("button[role=format]").click(function(){format_disk(this, $(this).attr("context"), $(this).attr("device"));});
 	});
+
+      
+});
+
 
 
 	if (typeof " ".formatUnicorn !== "function")
@@ -826,6 +844,42 @@ _(Snapshots BTRFS)_
 		<script type="text/javascript">
 			$(function(){
 				window.delete_snapshot = function(i){dousbipDevicesSurvey("delete_snapshot",i);}
+			
+			});
+		</script>
+	</div>
+</div>
+
+
+<div style="display:none;" data-survey-name="delete_schedule_slot" data-survey-title="<?=_('delete schedule slot');?>">
+	<div data-question data-question-title="" data-question-button-done="<?=_('Delete');?>" data-question-icon="warning">
+		<div data-question-format>
+			[surveyOption.subvol,surveyOption.slot]
+		</div>
+		<div data-question-content>
+			<div class="swal-title" style="font-size: 20px;"><?=_('This will delete the schedule slot');?>:</div>
+			<div style="margin-bottom: 15px;margin-top: 15px;">
+				<span style="font-weight: bold;">{0} {1}</span>
+			</div>
+			<div class="swal-title" style="font-size: 20px;">
+				<span class="red" style="font-weight: bold;"><?=_('Are you sure');?>?</span>
+			</div>
+		</div>
+		<div data-question-load></div>
+		<div data-question-done></div>
+	</div>
+	<div data-survey-done>
+		$.post(SNAPURL,{table:"delete_schedule_slot",subvol:surveyOption.subvol, slot:surveyOption.slot}).done(function(data)
+		{
+		swalShowResult((data == "true") ? true : false) ;
+		},"json").fail(function(){swalShowResult(false);});
+        parent.window.location.reload() ;
+	</div>
+	<div>
+		<script type="text/javascript">
+			$(function(){
+				window.delete_schedule_slot = function(subvol, slot){dousbipDevicesSurvey("delete_schedule_slot",{subvol:subvol,slot:slot});}
+				
 			
 			});
 		</script>

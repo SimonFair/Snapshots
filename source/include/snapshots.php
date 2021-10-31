@@ -264,7 +264,8 @@ case 'sv2':
       echo "<td><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode($seq)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
 
       echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i>" ;
-      echo  "<a onclick='add_schedule_slot(\"{$path}\")'><i title='"._("Add Schedule Slot")." {$slot}' class='fa fa-plus'></a>";
+     # echo  "<a onclick='add_schedule_slot(\"{$path}\")'><i title='"._("Add Schedule Slot")." {$slot}' class='fa fa-plus'></a>";
+      echo "<a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a>" ;
       echo "</td>" ;
       # echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
 
@@ -281,16 +282,16 @@ case 'sv2':
  #     $add_toggle = false;
  #     $hdd_serial .= "<span class='toggle-hdd' hdd='{$disk_name}'></span>";
  #  }
-      $toggle = "<span title ='"._("Click to view/hide partitions and mount points")." class='exec toggle-snap' snapvol='{$path}'><i class='fa fa-minus-square fa-append'></i></span>" ;
+      $toggle = "<span class='exec toggle-snapshots' snapvol='Test'><i class='fa fa-minus-square fa-append'></i></span>" ;
       echo "<tr><td>\t".$snap.' '.$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
-
+      $snapvol="Test" ;
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
             if ($subvoldetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
             #(! $disk['show_partitions']) || $disk['partitions'][0]['pass_through'] ? $style = "style='display:none;'" : $style = "";
             $style = "style='display:none;'" ;
             $style ="" ;
-            echo "<tr class=toggle-parts toggle-".basename($path)."' name='toggle-".basename($path)."' $style><td>\t\t".$subvolname.'</td>' ;
+            echo "<tr class=toggle-parts toggle-snaps-".basename($snapvol)."' name='toggle-snaps-".basename($snapvol)."' $style><td>\t\t".$subvolname.'</td>' ;
             echo '<td>' ;
             #echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Send Path" ' ;
             if ($subvoldetail["incremental"] != "" ) echo 'Parent:'.$subvoldetail["incremental"] ;
@@ -356,6 +357,20 @@ case 'sv2':
          snap_manager_log('Manual Run "'.$subvol.'" '.$error.' '.$result[0]) ;
          echo json_encode(TRUE);
          break;
+
+         case 'delete_schedule_slot':
+            $subvol = urldecode(($_POST['subvol']));
+            $slot = urldecode(($_POST['slot']));
+            $config_file_json = $GLOBALS["paths"]["subvol_schedule.json"];
+            $config =  @json_decode(file_get_contents($config_file_json) , true);
+            
+            unset($config[$subvol][$slot]) ;
+            save_json_file($config_file_json, $config) ;
+            #if
+            snap_manager_log('Removed Schedule Slot "'.$subvol.'" '.$slot.' '.$error.' '.$result[0]) ;
+            echo json_encode(TRUE);
+            break;
+           
         
          case 'delete_subvolume':
             $subvol = urldecode(($_POST['subvol']));
