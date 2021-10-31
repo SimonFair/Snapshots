@@ -33,7 +33,7 @@ if (isset($_GET['s'])) {
   	$seq = $_GET['seq'];
 	$width = "50%";
 #$subvolsch = get_subvol_schedule($serial);
-$subvolsch = get_subvol_schedule_json($serial);
+$subvolsch = get_subvol_schedule_json($serial,$seq);
 #	$subvolsch=array() ;
 
 #var_dump($seq) ;
@@ -50,11 +50,11 @@ if (count($_POST)) {
 		snap_manager_log("Updating snapshot settings...");
   #  var_dump($cfg) ;  
 		#set_subvol_schedule($serial, $cfg);
-    set_subvol_schedule_json($serial, $cfg ,0);
+    set_subvol_schedule_json($serial, $cfg ,$seq);
 		snap_manager_log("snapshot settings updated.");
     #reload() ;
     #$subvolsch = get_subvol_schedule($serial);
-    $subvolsch = get_subvol_schedule_json($serial,0);
+    $subvolsch = get_subvol_schedule_json($serial,$seq);
     #$subvolsch = $subvolsch[0] ;
 	} 
 }
@@ -273,6 +273,12 @@ _(Remove Snaps/Sends )_:
   <?=mk_option($subvolsch['snapsendopt'], "remote", _("Remote"))?>
   </select>
 &nbsp;_( Function not implemented.)_
+
+ _(Snapshot Prefix)_:
+: <input type="text" name="subvolprefix"  value="<?=$subvolsch['subvolprefix']?>" placeholder="Default" class="narrow"/>_(Function not implemented.)_
+
+ _(Send to location)_:
+: <input type="text" name="subvolsendto"  value="<?=$subvolsch['subvolsendto']?>" placeholder="Default" class="narrow"/>_(Function not implemented.)_
 
 
 <?endif;?>

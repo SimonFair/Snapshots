@@ -173,6 +173,14 @@ function get_subvol_schedule_json($sn,$seq=0) {
 	return (isset($config[$sn][$seq])) ? $config[$sn][$seq] : FALSE;
 }
 
+function get_subvol_schedule_slots($sn) {
+	$config_file_json = $GLOBALS["paths"]["subvol_schedule.json"];
+	$config =  @json_decode(file_get_contents($config_file_json) , true);
+	#var_dump($config[$sn], $sn) ;
+	#return (isset($config[$sn])) ? html_entity_decode($config[$sn]) : FALSE;
+	return (isset($config[$sn])) ? $config[$sn] : FALSE;
+}
+
 function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
 	
 	$config_file_json = $GLOBALS["paths"]["subvol_schedule.json"];
@@ -206,12 +214,13 @@ function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
 	$config[$sn][$schedule_seq] = $val ;
 
 	save_json_file($config_file_json, $config) ;
-	if ($config[$sn]["snapscheduleenabled"] == "yes") {
-	$cron = "# Generated snapshot schedule for:$sn\n".$val["cron"]." /usr/local/emhttp/plugins/snapshots/include/snapping.php \"$sn\" > /dev/null 2>&1 \n\n"; }
+	if ($config[$sn][$schedule_seq]["snapscheduleenabled"] == "yes") {
+	$cron = "# Generated snapshot schedule for:$sn\n".$val["cron"]." /usr/local/emhttp/plugins/snapshots/include/snapping.php \"$sn\" \"$schedule_seq\" > /dev/null 2>&1 \n\n"; }
 	else {
 	$cron="" ;
 	}
-	parse_cron_cfg("snapshots", urlencode($sn), $cron);
+	$file=$sn."Slot".$schedule_seq ;
+	parse_cron_cfg("snapshots", urlencode($file), $cron);
 
 	return (isset($config[$sn][$var])) ? $config[$sn] : FALSE;
 }

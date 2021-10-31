@@ -62,8 +62,10 @@ cron = "0 13 * * *"
 $subvol = $arg1 ;
 $snapshot=get_subvol_config($subvol, "default") ;
 $readonly = true ;
+$slot= $arg2 ;
 
-$schedule = get_subvol_schedule($subvol) ;
+#$schedule = get_subvol_schedule($subvol) ;
+$schedule = get_subvol_schedule_json($subvol,$slot) ;
 $logging = $schedule['snaplogging'] ;
 
 /* is logging set 
@@ -74,11 +76,11 @@ if yes log steps, otherwise just log start/stop.
 $pidfile= '/var/run/snap'.urlencode($subvol).'.pid' ;
 $pid = file_exists($pidfile) ;
 if ($pid) {
-	snap_manager_log('Snapping process already running for'.$arg1 ) ;
+	snap_manager_log('Snapping process already running for'.$arg1." Slot:".$slot ) ;
 	return(-1) ;
 }
 
-snap_manager_log('Start snapping process '.$arg1 ) ;
+snap_manager_log('Start snapping process '.$arg1." Slot:".$slot ) ;
 
 # Write pid file
 file_put_contents($pidfile, "Pid") ;
@@ -188,7 +190,7 @@ if ($schedule["occurences"] > 0)
 	}
 }
 }
-sleep(30) ;
+sleep(10) ;
 unlink($pidfile) ;
 snap_manager_log('End snapping process '.$arg1 ) ;
 ?>

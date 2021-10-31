@@ -204,11 +204,35 @@ case 'sv2':
       
       echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
       echo "<td><a href=\"/Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
+      echo "<td></td><td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
+
+      # Show Schedule Slots upto 10.
+      foreach(get_subvol_schedule_slots($path) as $slot=>$slotdetail) {
+
+       echo "<tr><td>\t  Schedule Slot: {$slot}</td>" ;
+
+       if (isset($slotdetail["subvolprefix"]) && $slotdetail["subvolprefix"] != "" ) {
+         $slotsubvoldft = $slotdetail["subvolprefix"];
+      } else { $slotsubvoldft = _("Default") ;}
+         echo '<td>' ;
+         echo $slotsubvoldft ;
+         echo "</td>" ;
+
+         if (isset($slotdetail["subvolsendto"]) && $slotdetail["subvolsendto"] != "") {
+            $slotsubvolsendto = $slotdetail["subvolsendto"] ;
+         } else { $slotsubvolsendto = _("Default") ;}
+         echo '<td>' ;
+         echo $slotsubvolsendto ;
+         echo "</td>" ;
+         echo "<td></td>" ;
+       echo  "<td title='"._("Remove Schedule Slot")." {$slot}'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_schedule_slot(\"{$path}\",\"{$slot}\")'><i class='fa fa-remove hdd'></a>";
+
+
 
       # Set Orb Colour based on Schedule status, Green enabled, Red Disabled, Grey not definded.
 
       #$schedule_state=get_subvol_sch_config($path, "snapscheduleenabled") ;
-      $schedule_state=get_subvol_sch_config_json($path, "snapscheduleenabled") ;
+      $schedule_state=$slotdetail["snapscheduleenabled"] ;
       switch($schedule_state)  {
          case 'yes' :
                $colour = "green" ; 
@@ -226,23 +250,47 @@ case 'sv2':
             $run_disabled = "disabled";
             break ;
       } 
-      #$colour="grey" ;
-      $seq=0 ;
-      echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode($seq)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a>" ;
-     # echo "<a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_schedule(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
-      
-      #echo "<td title='"._("Delete Schedule")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a></td>" ;
+
+      echo "<td>" ;
       $pid = file_exists('/var/run/snap'.urlencode($path).'.pid') ;
       #$pid =true ;
       if ($pid) {
          echo make_button("Running", "run_schedule", $parm, 'disabled') ;
-      } else  echo make_button("Run Now", "run_schedule", $parm, $run_disabled) ;
+      } else  echo make_button("Run Now", "run_schedule", "{$path}\",\"{$slot}", $run_disabled) ;
       echo "</td>" ;
-      echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
+
+      #$colour="grey" ;
+      $seq=$slot ;
+      echo "<td><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode($seq)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
+
+      echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i>" ;
+      echo  "<a onclick='add_schedule_slot(\"{$path}\")'><i title='"._("Add Schedule Slot")." {$slot}' class='fa fa-plus'></a>";
+      echo "</td>" ;
+      # echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
+
+      }
+      echo "<td></td></tr>" ;
+
+ #     $add_toggle = true;
+ #     if (! $disk['show_partitions']) {
+ #        $hdd_serial .="<span title ='"._("Click to view/hide partitions and mount points")."' class='exec toggle-hdd' hdd='{$disk_name}'><i class='fa fa-plus-square fa-append'></i></span>";
+ #     } else {
+ #        $hdd_serial .="<span><i class='fa fa-minus-square fa-append grey-orb'></i></span>";
+ #     }
+ #  } else {
+ #     $add_toggle = false;
+ #     $hdd_serial .= "<span class='toggle-hdd' hdd='{$disk_name}'></span>";
+ #  }
+      $toggle = "<span title ='"._("Click to view/hide partitions and mount points")." class='exec toggle-snap' snapvol='{$path}'><i class='fa fa-minus-square fa-append'></i></span>" ;
+      echo "<tr><td>\t".$snap.' '.$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
             if ($subvoldetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
-            echo "<tr><td>\t\t".$subvolname.'</td>' ;
+            #(! $disk['show_partitions']) || $disk['partitions'][0]['pass_through'] ? $style = "style='display:none;'" : $style = "";
+            $style = "style='display:none;'" ;
+            $style ="" ;
+            echo "<tr class=toggle-parts toggle-".basename($path)."' name='toggle-".basename($path)."' $style><td>\t\t".$subvolname.'</td>' ;
             echo '<td>' ;
             #echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Send Path" ' ;
             if ($subvoldetail["incremental"] != "" ) echo 'Parent:'.$subvoldetail["incremental"] ;
@@ -302,7 +350,8 @@ case 'sv2':
 
       case 'run_schedule':
          $subvol = urldecode(($_POST['subvol']));
-         exec('/usr/local/emhttp/plugins/snapshots/include/snapping.php "'.$subvol.'" > /dev/null 2>&1 ', $result, $error) ;
+         $slot = urldecode(($_POST['slot']));
+         exec('/usr/local/emhttp/plugins/snapshots/include/snapping.php "'.$subvol.'" "'.$slot.'" > /dev/null 2>&1 ', $result, $error) ;
          #if
          snap_manager_log('Manual Run "'.$subvol.'" '.$error.' '.$result[0]) ;
          echo json_encode(TRUE);

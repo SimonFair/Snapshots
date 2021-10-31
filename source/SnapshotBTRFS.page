@@ -51,7 +51,15 @@ table.snapshot tr td:empty {  width: 50px; }
 	table.snapshot tr>td+td+td+td+td+td+td+td+td{text-align:left;}
 	table.snapshot tr>td+td+td+td+td+td+td+td+td+td+td+td{text-align:center;}
 
-
+	button.mount {padding:2px 4px 3px 6px;margin:1px 0px 1px 0px;}
+	i.partition-hdd{margin:5px; 0px; 0px; 0px;}
+	i.hdd{margin:5px; 0px; 0px; 0px;}
+	i.share{margin:5px 5px 0px 0px;}
+	i.mount-share{margin:5px 5px 0px 0px;}
+	i.partition-script{margin-left: 10px; margin-right: 6px;}
+	.exec{cursor: pointer;}
+	i.fa-append{margin:0px;font-size: 0.8em;position: relative; left:-0.3em;top:0.7em;}
+	.underline{text-decoration: underline;}
 </style>
 
 
@@ -73,6 +81,23 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 
       
 });
+
+	$("#sv2").arrive("tr",{onceOnly:false},function()
+	{
+		tr = $(this);
+
+	
+		tr.find("span.toggle-snap").click(function(e)
+		{
+			$(this).disableSelection();disk = $(this).attr("snapvol");el = $(this);
+			$(".toggle-"+snapvol).slideToggle(0);
+		});
+		tr.find( "button[role$=mount]" ).on( "click", function()
+		{
+			disk_op(this, $(this).attr("role"), $(this).attr("device"));
+		});
+		tr.find("button[role=format]").click(function(){format_disk(this, $(this).attr("context"), $(this).attr("device"));});
+	});
 
 
 	if (typeof " ".formatUnicorn !== "function")
@@ -151,11 +176,11 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 		});
 	}
 
-		function run_schedule(subvol) {
+		function run_schedule(subvol, slot) {
 		/* add spinning and disable button */
 
 	
-		$.post(SNAPURL,{'table':'run_schedule','subvol':subvol}).done(function(data)
+		$.post(SNAPURL,{'table':'run_schedule', 'subvol':subvol, 'slot':slot}).done(function(data)
 		{
 
 		/* $("button[device='"+device+"']").html(" "+(op == "bind" ? "<?=_('Unbind');?>" : "<?=_('attach');?>"));*/
