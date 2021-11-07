@@ -133,13 +133,15 @@ function set_subvol_schedule($sn, $val) {
     $day   = $val['day'] ?? '*';
 	$hour  = $val['hour1'] ?? '*';
 	$min   = $val['min'] ?? '*';
+	#$val['rund'] = implode("," , $val['rund']) ;
+	#$rund   = $val['rund'] ?? '*';
 		
 	switch ($val["snapSchedule"]) {
 		case "0": 
-			$val["cron"] = "0 $hour2 * * *" ;
+			$val["cron"] = "0 $hour2 * * $rund" ;
 			break;
 		case "1": 
-			$val["cron"] = "$min $hour * * *" ;
+			$val["cron"] = "$min $hour * * $rund" ;
 			break;
 		case "2": 
 			$val["cron"] = "$min $hour * * $day" ;
@@ -150,7 +152,7 @@ function set_subvol_schedule($sn, $val) {
 		}
 	#var_dump($val) ;
 	$val['vmselection'] = implode("," , $val['vmselection']) ;
-	$val['excd'] = implode("," , $val['excd']) ;
+	
 	$config[$sn] = $val ;
 	#$config_json[$sn] = $val ;
 	save_ini_file($config_file, $config);
@@ -210,7 +212,7 @@ function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
 		}
 	#var_dump($val) ;
 	$val['vmselection'] = implode("," , $val['vmselection']) ;
-	$val['excd'] = implode("," , $val['excd']) ;
+	$val['rund'] = implode("," , $val['rund']) ;
 	$config[$sn][$schedule_seq] = $val ;
 
 	save_json_file($config_file_json, $config) ;
@@ -586,7 +588,7 @@ function build_list3($lines) {
 			foreach ($vol as $vline) {
 
 				#echo "<tr><td>" ;echo preg_match('/^ID parent_uuid (?P<puuid>\S+) uuid (?P<uuid>\S+): path (?P<path>\S+)(?P<name>.*)$/', $vline, $arrMatch) ; echo "</td></tr>" ;
-				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
+				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>[\S\D]+)/', $vline, $arrMatch)) {
 
 					#echo "<tr><td>" ;var_dump($arrMatch) ;echo "</td></tr>" ;
 

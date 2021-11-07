@@ -35,7 +35,6 @@ if (isset($_GET['s'])) {
 #$subvolsch = get_subvol_schedule($serial);
 $subvolsch = get_subvol_schedule_json($serial,$seq);
 #	$subvolsch=array() ;
-
 #var_dump($seq) ;
 #var_dump($subvolsch) ;
 }
@@ -66,6 +65,8 @@ $mode = ['Hourly','Daily','Weekly','Monthly'];
 $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 if (!isset($subvolsch['snapscheduleenabled'])) { $subvolsch['snapscheduleenabled'] = "no" ; $setup=false ;} else $setup=true ;
 
+if (!isset($subvolsch["rund"])) $subvolsch["rund"] = $days ;
+
 $setup=true ;
 ?>
 
@@ -76,7 +77,7 @@ $setup=true ;
 $(function() {
   presetsnap(document.snap_schedule);
   $("#vmselection").dropdownchecklist({ emptyText: 'None', width: 166, explicitClose: '...close' });
-    $("#excd").dropdownchecklist({ emptyText: 'None', width: 166, explicitClose: '...close' });
+    $("#rund").dropdownchecklist({ emptyText: 'None', height:200, width: 166 });
 });
 <? endif; ?>
 // Fool Unraid by simulating the original input field
@@ -90,12 +91,14 @@ function preparesnap(form) {
   form.hour2.disabled = true;
   form.dotm.disabled = true;
   form.day.disabled = true;
+  form.rund.disabled = true;
  }
 function presetsnap(form) {
   var mode = form.snapSchedule.value;
   form.min.disabled = false;
   form.day.disabled = mode!=2;
   form.dotm.disabled = mode!=3;
+  
   form.day.value = form.day.disabled ? '*' : (form.day.value=='*' ? 0 : form.day.value);
   form.dotm.value = form.dotm.disabled ? '*' : (form.dotm.value=='*' ? 1 : form.dotm.value);
   if (mode==0) {$('#H1').hide(); $('#H2').show();} else {$('#H2').hide(); $('#H1').show();}
@@ -165,20 +168,20 @@ _(Time of the day)_:
 
 :snap_time_of_the_day_help:
 
-_(Exclude Dates)_:
-: <select name="excd[]" id="excd" class="input.description" multiple="multiple" style="display">
+_(Days to run for Hourly and Daily)_:
+: <select name="rund[]" id="rund" class="input.description" multiple="multiple" size=10 style="display">
  <?php
 	 	$output = $days;
 	    
       foreach($output as $item){
 		       
-      $checked = in_array($item,explode(',',$subvolsch["excd"])) ? " selected" : "";
+      $checked = in_array($item,explode(',',$subvolsch["rund"])) ? " selected" : "";
       echo "<option value='$item'$checked >$item</option>";
 }
 ?>
-  <?=mk_option($subvolsch['excd'], "*", "--------", "disabled")?>
+  <?=mk_option($subvolsch['rund'], "*", "--------", "disabled")?>
   </select>
-    &nbsp;_( Function not implemented.)_
+  &nbsp;_( Function not implemented.)_  
 
 :snap_excluded_days_help:
 
@@ -192,8 +195,9 @@ _(Snap Schedule logging)_:
 
 _(Snap Send )_:
 : <select name="snapsend">
-  <?=mk_option($subvolsch['snapsend'], "local", _("Local"))?>
   <?=mk_option($subvolsch['snapsend'], "no", _("Disabled"))?>
+  <?=mk_option($subvolsch['snapsend'], "local", _("Local"))?>
+  
   <?=mk_option($subvolsch['snapsend'], "remote", _("Remote"))?>
   </select>
  &nbsp;_( Function not implemented.)_
@@ -259,7 +263,7 @@ _(Function not implemented.)_
   </select>
 
    _(Days)_:
-: <input type="text" name="days"  value="<?=$subvolsch['days']?>" placeholder="Days" class="narrow" />_(Function not implemented.)_
+: <input type="text" name="days"  value="<?=$subvolsch['days']?>" placeholder="Days" class="narrow" />
 
    _(Occurences)_:
 : <input type="text" name="occurences" value="<?=$subvolsch['occurences']?>" placeholder="Number of" class="narrow" />
@@ -267,8 +271,9 @@ _(Function not implemented.)_
 
 _(Remove Snaps/Sends )_:
 : <select name="snapsendopt">
+ <?=mk_option($subvolsch['snapsendopt'], "none", _("None"))?>
   <?=mk_option($subvolsch['snapsendopt'], "local", _("Local"))?>
-  <?=mk_option($subvolsch['snapsendopt'], "none", _("None"))?>
+ 
   <?=mk_option($subvolsch['snapsendopt'], "both", _("Both"))?>
   <?=mk_option($subvolsch['snapsendopt'], "remote", _("Remote"))?>
   </select>

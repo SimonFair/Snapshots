@@ -206,8 +206,10 @@ case 'sv2':
       echo "<td><a href=\"/Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
       echo "<td></td><td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
 
+      $slots=get_subvol_schedule_slots($path) ;
+      $slotcount=count($slots) ;
       # Show Schedule Slots upto 10.
-      foreach(get_subvol_schedule_slots($path) as $slot=>$slotdetail) {
+      foreach($slots as $slot=>$slotdetail) {
 
        echo "<tr><td>\t  Schedule Slot: {$slot}</td>" ;
 
@@ -265,17 +267,17 @@ case 'sv2':
 
       echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i>" ;
      # echo  "<a onclick='add_schedule_slot(\"{$path}\")'><i title='"._("Add Schedule Slot")." {$slot}' class='fa fa-plus'></a>";
-      echo "<a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a>" ;
+      if ($slotcount <10) echo "<a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a>" ;
       echo "</td>" ;
       # echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
-
+      echo "<td>{$slotcount}</td></tr>" ;
       }
-      echo "<td></td></tr>" ;
+      
 
       $snapvol=$snap;
       $snapvol=str_replace( "/", "-", $snapvol) ;
       $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
-      echo "<tr><td>\t".$snap.$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
       
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -336,11 +338,11 @@ case 'sv2':
           $config = @parse_ini_file($config_file, true);
           $list= json_decode(file_get_contents($config_file_json), true) ;
            echo "<tr><td>" ;
-           var_dump(($list)) ;
+      #     var_dump(($list)) ;
            echo "</td></tr>" ;
            $list=build_list2($targetcli) ;
            echo "<tr><td>" ;
-           var_dump($config) ;
+           var_dump($list) ;
            echo "</td></tr>" ;
            break;
 

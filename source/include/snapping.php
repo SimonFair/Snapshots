@@ -61,6 +61,7 @@ cron = "0 13 * * *"
 
 $subvol = $arg1 ;
 $snapshot=get_subvol_config($subvol, "default") ;
+$sendshot=get_subvol_config($subvol, "sendto") ;
 $readonly = true ;
 $slot= $arg2 ;
 
@@ -94,10 +95,34 @@ $vm_state=array() ;
 foreach($vms as $vm) {
 	$vm_output=NULL ;
 	exec ('virsh domstate "'.$vm.'"', $vm_output) ;
+	if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]);
 	$vm_state[$vm] = $vm_output[0] ;
 }
 var_dump($vm_state) ;
+$hostoption=$schedule["hostoption"] ;
+/*
+foreach($vms as $vm) {
+	switch($hostoption) {
+		case ""	
+	
+	exec ('virsh domstate "'.$vm.'"', $vm_output) ;
+	if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]);
+	$vm_state[$vm] = $vm_output[0] ;
+}
 
+#root@computenode:/usr/local/emhttp/plugins/snapshots/include# virsh suspend "Windows 11"
+#Domain 'Windows 11' suspended
+
+#root@computenode:/usr/local/emhttp/plugins/snapshots/include# virsh resume "Windows 11"
+#Domain 'Windows 11' resumed
+
+#root@computenode:/usr/local/emhttp/plugins/snapshots/include# virsh shutdown "Windows 11"
+#Domain 'Windows 11' is being shutdown
+
+#root@computenode:/usr/local/emhttp/plugins/snapshots/include# virsh start "Windows 11"
+#Domain 'Windows 11' started
+
+*/
 
 
 if ($dummyrun == true)
@@ -126,9 +151,15 @@ if ($dummyrun == true)
 
  /* Restart VMs */ 
 
-/* Send Sandshot */
+/* Send Snapshot */
 
 /* Send Local */
+var_dump($sendshot) ;
+if ($schedule["snapsend"] == "local") 
+  {
+		exec('btrfs send '.$snapshoty.' | btrfs receive '.$sendshot , $result, $error) ;
+		snap_manager_log('btrfs snapshot send '.$snapshoty.' To '.$sendshot.' '.$error.' '.$result[0]) ;
+  }
 
 /* Send Remote */
 
