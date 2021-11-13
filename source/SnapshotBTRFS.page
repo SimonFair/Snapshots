@@ -107,8 +107,10 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 			$(".toggle-rmtip-"+hostport).slideToggle(0,function(){
 				if ( $("tr.toggle-rmtip-"+hostport+":first").is(":visible") ){
 					el.find(".fa-append").addClass("fa-minus-square").removeClass("fa-plus-square");
+					$.cookie(hostport, 'true' , { expires: 3650, path:'/' });
 				} else {
 					el.find(".fa-append").removeClass("fa-minus-square").addClass("fa-plus-square");
+						$.cookie(hostport, 'false', { expires: 3650, path:'/' });
 				}
 			});
 		});

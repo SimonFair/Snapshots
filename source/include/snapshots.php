@@ -208,6 +208,10 @@ case 'sv2':
 
       $slots=get_subvol_schedule_slots($path) ;
       $slotcount=count($slots) ;
+       if ($slots == FALSE) {
+         $slots=array() ; 
+        $slots["0"]["snapscheduleenable"] = "" ;
+      }
       # Show Schedule Slots upto 10.
       foreach($slots as $slot=>$slotdetail) {
 
@@ -275,9 +279,14 @@ case 'sv2':
       
 
       $snapvol=$snap;
+      $snapvol=$path ;
       $snapvol=str_replace( "/", "-", $snapvol) ;
+      if ($_COOKIE[$snapvol] == "false") {
+         $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-plus-square fa-append'></i></span>" ;
+      } else {
       $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
-      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      }
+      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td>'.$_COOKIE[$snapvol].'</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
       
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -286,7 +295,7 @@ case 'sv2':
             $style = "style='display:none;'" ;
             $style ="" ;
            # echo "<tr class=toggle-parts toggle-snaps-".basename($snapvol)."' name='toggle-snaps-".basename($snapvol)."' $style><td>\t\t".$subvolname.'</td>' ;
-            #$style = "style='display:none;' " ;
+            if ($_COOKIE[$snapvol] == "true") $style = "  " ; else $style = " hidden "  ;
             $hostport = $snapvol ;
             echo "<tr class='toggle-parts toggle-rmtip-".$hostport."' name='toggle-rmtip-".$hostport."'".$style.">" ;
             echo "<td>\t\t".$subvolname."</td><td></td>" ;
@@ -338,7 +347,7 @@ case 'sv2':
           $config = @parse_ini_file($config_file, true);
           $list= json_decode(file_get_contents($config_file_json), true) ;
            echo "<tr><td>" ;
-      #     var_dump(($list)) ;
+           var_dump($_COOKIE) ;
            echo "</td></tr>" ;
            $list=build_list2($targetcli) ;
            echo "<tr><td>" ;
