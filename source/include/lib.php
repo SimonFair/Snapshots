@@ -133,8 +133,9 @@ function set_subvol_schedule($sn, $val) {
     $day   = $val['day'] ?? '*';
 	$hour  = $val['hour1'] ?? '*';
 	$min   = $val['min'] ?? '*';
-	#$val['rund'] = implode("," , $val['rund']) ;
-	#$rund   = $val['rund'] ?? '*';
+	$val['rund'] = implode("," , $val['rund']) ;
+	$rund   = $val['rund'] ;
+	#$rund = "Sun" ;
 		
 	switch ($val["snapSchedule"]) {
 		case "0": 
@@ -195,28 +196,81 @@ function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
     $day   = $val['day'] ?? '*';
 	$hour  = $val['hour1'] ?? '*';
 	$min   = $val['min'] ?? '*';
+	$rundarray=  $val['rund'] ;
+	$val['rund'] = implode("," , $val['rund']) ;
+
+/* Process new Slot if slot = 99 */
+	$seq_count=0 ;
+	if ($schedule_seq == "99")
+	{
+		$slots=  get_subvol_schedule_slots($sn) ;
+		ksort($slots) ;
+		foreach ($slots as $slotseq=>$slot) {
+			if ($slotseq == $seq_count ) {
+				 $seq_count++; 
+				 continue ;
+				} else {
+					$schedule_seq = $seq_count ;
+					break ;
+				}
+		}
+		if ($schedule_seq == 99) $schedule_seq = $seq_count ;
+
+
+	}
+
+	#$rund   = $val['rund'] ?? '*';
+
+
+	$rund = "" ;
+	foreach ($rundarray as $daytorun) {
+		switch ($daytorun) {
+			case _("Sunday"):
+				$rund.= "0," ;
+				break ;
+			case _("Monday"):
+				$rund.= "1," ;
+				break ;
+			case _("Tuesday"):
+				$rund.= "2," ;
+				break ;
+			case _("Wednesday"):
+				$rund.= "3," ;
+				break ;
+			case _("Thursday"):
+				$rund.= "4," ;
+				break ;
+			case _("Friday"):
+				$rund.= "5," ;
+				break ;	
+			case _("Saturday"):
+				$rund.= "6," ;
+				break;
+		}
+	}
 		
 	switch ($val["snapSchedule"]) {
 		case "0": 
-			$val["cron"] = "0 $hour2 * * *" ;
+			$val["cron"] = "0 $hour2 * * $rund" ;
 			break;
 		case "1": 
-			$val["cron"] = "$min $hour * * *" ;
+			$val["cron"] = "$min $hour * * $rund" ;
 			break;
 		case "2": 
 			$val["cron"] = "$min $hour * * $day" ;
+			$rund="*" ;
 			break;	
 		case "3": 
 			$val["cron"] = "$min $hour $dotm * *" ;
+			$rund="*" ;
 			break;	
 		}
 	#var_dump($val) ;
 	$val['vmselection'] = implode("," , $val['vmselection']) ;
-	$val['rund'] = implode("," , $val['rund']) ;
 	$config[$sn][$schedule_seq] = $val ;
 
 	save_json_file($config_file_json, $config) ;
-	if ($config[$sn][$schedule_seq]["snapscheduleenabled"] == "yes") {
+	if ($config[$sn][$schedule_seq]["snapscheduleenabled"] == "yes" && $rund !="") {
 	$cron = "# Generated snapshot schedule for:$sn\n".$val["cron"]." /usr/local/emhttp/plugins/snapshots/include/snapping.php \"$sn\" \"$schedule_seq\" > /dev/null 2>&1 \n\n"; }
 	else {
 	$cron="" ;
@@ -224,7 +278,7 @@ function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
 	$file=$sn."Slot".$schedule_seq ;
 	parse_cron_cfg("snapshots", urlencode($file), $cron);
 
-	return (isset($config[$sn][$var])) ? $config[$sn] : FALSE;
+	return $schedule_seq ;
 }
 
 function get_subvol_sch_config_json($sn, $var,$seq=0) {

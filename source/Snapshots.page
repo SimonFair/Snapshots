@@ -1,5 +1,4 @@
 Menu="SnapshotInformation"
 Title="Snapshots"
-Icon="fa-file"
 Type="xmenu"
 Tabs="true"

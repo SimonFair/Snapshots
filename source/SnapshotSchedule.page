@@ -51,7 +51,7 @@ if (count($_POST)) {
 		snap_manager_log("Updating snapshot settings...");
   #  var_dump($cfg) ;  
 		#set_subvol_schedule($serial, $cfg);
-    set_subvol_schedule_json($serial, $cfg ,$seq);
+    $seq=set_subvol_schedule_json($serial, $cfg ,$seq);
 		snap_manager_log("snapshot settings updated.");
     #reload() ;
     #$subvolsch = get_subvol_schedule($serial);
@@ -63,6 +63,7 @@ if (count($_POST)) {
 $cron = explode(' ',$subvolsch['cron']);
 #$cron = explode(' ',"0 * * * *" );
 $move = $cron[2]!='*' ? 3 : ($cron[4]!='*' ? 2 : (substr($cron[1],0,1)!='*' ? 1 : 0));
+$move = $subvolsch["snapSchedule"] ;
 $mode = ['Hourly','Daily','Weekly','Monthly'];
 $days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 if (!isset($subvolsch['snapscheduleenabled'])) { $subvolsch['snapscheduleenabled'] = "no" ; $setup=false ;} else $setup=true ;
@@ -181,7 +182,7 @@ _(Days to run for Hourly and Daily)_:
 ?>
   <?=mk_option($subvolsch['rund'], "*", "--------", "disabled")?>
   </select>
-  &nbsp;_( Function not implemented.)_  
+  &nbsp;_( Function implemented no error checking.)_  
 
 :snap_excluded_days_help:
 

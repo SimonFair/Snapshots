@@ -207,6 +207,7 @@ case 'sv2':
       echo "<td></td><td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
 
       $slots=get_subvol_schedule_slots($path) ;
+      ksort($slots) ;
       $slotcount=count($slots) ;
        if ($slots == FALSE) {
          $slots=array() ; 
@@ -271,22 +272,24 @@ case 'sv2':
 
       echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i>" ;
      # echo  "<a onclick='add_schedule_slot(\"{$path}\")'><i title='"._("Add Schedule Slot")." {$slot}' class='fa fa-plus'></a>";
-      if ($slotcount <10) echo "<a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a>" ;
+      if ($slotcount <7) echo "<a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a>" ;
       echo "</td>" ;
       # echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
-      echo "<td>{$slotcount}</td></tr>" ;
+      #echo "<td>{$slotcount}</td></tr>" ;
+      echo "<td></td></tr>" ;
       }
       
 
       $snapvol=$snap;
       $snapvol=$path ;
       $snapvol=str_replace( "/", "-", $snapvol) ;
-      if ($_COOKIE[$snapvol] == "false") {
+      if ($_COOKIE[$snapvol] == "false" || !isset($_COOKIE[$snapvol])) {
          $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-plus-square fa-append'></i></span>" ;
+         if (!isset($_COOKIE[$snapvol])) setcookie($snapvol, 'true' ,  3650, '/' );
       } else {
       $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
       }
-      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td>'.$_COOKIE[$snapvol].'</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
       
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -295,7 +298,7 @@ case 'sv2':
             $style = "style='display:none;'" ;
             $style ="" ;
            # echo "<tr class=toggle-parts toggle-snaps-".basename($snapvol)."' name='toggle-snaps-".basename($snapvol)."' $style><td>\t\t".$subvolname.'</td>' ;
-            if ($_COOKIE[$snapvol] == "true") $style = "  " ; else $style = " hidden "  ;
+            if ($_COOKIE[$snapvol] == "true" || !isset($_COOKIE[$snapvol])) $style = "  " ; else $style = " hidden "  ;
             $hostport = $snapvol ;
             echo "<tr class='toggle-parts toggle-rmtip-".$hostport."' name='toggle-rmtip-".$hostport."'".$style.">" ;
             echo "<td>\t\t".$subvolname."</td><td></td>" ;
@@ -347,7 +350,8 @@ case 'sv2':
           $config = @parse_ini_file($config_file, true);
           $list= json_decode(file_get_contents($config_file_json), true) ;
            echo "<tr><td>" ;
-           var_dump($_COOKIE) ;
+           #var_dump($_COOKIE) ;
+           var_dump($list) ;
            echo "</td></tr>" ;
            $list=build_list2($targetcli) ;
            echo "<tr><td>" ;
@@ -372,6 +376,9 @@ case 'sv2':
             
             unset($config[$subvol][$slot]) ;
             save_json_file($config_file_json, $config) ;
+            $cron="" ;
+	      	$file=$subvol."Slot".$slot ;
+	         parse_cron_cfg("snapshots", urlencode($file), $cron);
             #if
             snap_manager_log('Removed Schedule Slot "'.$subvol.'" '.$slot.' '.$error.' '.$result[0]) ;
             echo json_encode(TRUE);
