@@ -67,7 +67,13 @@ $slot= $arg2 ;
 
 #$schedule = get_subvol_schedule($subvol) ;
 $schedule = get_subvol_schedule_json($subvol,$slot) ;
+
 $logging = $schedule['snaplogging'] ;
+
+if ($schedule["subvolprefix"] != "") $snapshot = $schedule["subvolprefix"] ;
+if ($schedule["subvolsendto"] != "") $sendshot = $schedule["subvolsendto"] ;
+
+var_dump($snapshot, $sendshot) ;
 
 /* is logging set 
 if yes log steps, otherwise just log start/stop.
@@ -100,16 +106,29 @@ foreach($vms as $vm) {
 }
 var_dump($vm_state) ;
 $hostoption=$schedule["hostoption"] ;
-/*
-foreach($vms as $vm) {
-	switch($hostoption) {
-		case ""	
-	
-	exec ('virsh domstate "'.$vm.'"', $vm_output) ;
-	if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]);
-	$vm_state[$vm] = $vm_output[0] ;
-}
+$vms_running = false ;
 
+foreach($vms as $vm) {
+	if ($vm_state[$vm] == "shut off") continue ;
+	$vms_running = true ;
+	switch ($hostoption) {
+		case "shutdown":
+			exec ('virsh shutdown "'.$vm.'"', $vm_output) ;
+			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]." Being Shutdown");
+			break ;
+		case "suspend":
+			exec ('virsh suspend "'.$vm.'"', $vm_output) ;
+			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]." Being Suspended");
+			break ;
+		case "hibernate":
+			exec ('virsh dompmsuspend "'.$vm.'" disk', $vm_output) ;
+			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]." Being Hibernated");
+			break ;
+		}				
+
+
+} 
+/* 
 #root@computenode:/usr/local/emhttp/plugins/snapshots/include# virsh suspend "Windows 11"
 #Domain 'Windows 11' suspended
 
@@ -123,7 +142,11 @@ foreach($vms as $vm) {
 #Domain 'Windows 11' started
 
 */
-
+if ($vms != NULL && $vms_running) {
+	
+if ($logging == "yes") snap_manager_log("Waiting For VMs to be processed. Sleep(".$schedule['shutdowntimeout'].")");
+sleep($schedule["shutdowntimeout"]) ;
+}
 
 if ($dummyrun == true)
   {
@@ -150,6 +173,27 @@ if ($dummyrun == true)
   }
 
  /* Restart VMs */ 
+if ($vms_running) {
+ foreach($vms as $vm) {
+	if ($vm_state[$vm] == "shut off") continue ;
+	
+	switch ($hostoption) {
+		case "shutdown":
+			exec ('virsh start "'.$vm.'"', $vm_output) ;
+			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Started");
+			break ;
+		case "suspend":
+			exec ('virsh resume "'.$vm.'"', $vm_output) ;
+			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Resumed");
+			break ;
+		case "hibernate":
+			exec ('virsh start "'.$vm.'"', $vm_output) ;
+			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Woken");
+			break ;
+		}				
+ }	
+
+} 
 
 /* Send Snapshot */
 

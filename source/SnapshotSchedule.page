@@ -191,7 +191,7 @@ _(Snap Schedule logging)_:
   <?=mk_option($subvolsch['snaplogging'], "yes", _("Enabled"))?>
   <?=mk_option($subvolsch['snaplogging'], "no", _("Disabled"))?>
   </select>
-&nbsp;_( Function not implemented.)_
+
 :snap_logging_help:
 
 _(Snap Send )_:
@@ -242,16 +242,12 @@ _(VM options)_:
   <?=mk_option($subvolsch['hostoption'], 'hibernate', _('Hibernate VMs'))?>
   <?=mk_option($subvolsch['hostoption'], 'suspend', _('Suspend VMs'))?>
   </select>
-&nbsp;_( Function not implemented.)_
+
 
 :vms_host_shutdown_help:
 
 _(VM shutdown time-out)_:
 : <input type="number" id="vm_shutdown_timeout" name="shutdowntimeout" value="<?=htmlspecialchars($domain_cfg['TIMEOUT'])?>" class="narrow">
-  <?if (!empty($subvolsch['shutdowntimeout']) && !empty($subvolsch['shutdowntimeout']) && (int)$subvolsch['shutdowntimeout'] > (int)$var['shutdownTimeout']):?>
-  <span id="arraystopped"><i class="fa fa-warning icon warning"></i> _(exceeds Disk Shutdown)_ <?=htmlspecialchars($var['shutdownTimeout'])?>s _(time-out)_ (<a href="/Settings/DiskSettings">_(edit)_</a>)</span>
-  <?endif;?>
-_(Function not implemented.)_
 
 :vms_shutdown_timeout_help:
 
