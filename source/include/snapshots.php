@@ -292,6 +292,7 @@ case 'sv2':
       $snapvol=$snap;
       $snapvol=$path ;
       $snapvol=str_replace( "/", "-", $snapvol) ;
+      $snapvol=str_replace( "~", "-", $snapvol) ;
       if ($_COOKIE[$snapvol] == "false" || !isset($_COOKIE[$snapvol])) {
          $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-plus-square fa-append'></i></span>" ;
          if (!isset($_COOKIE[$snapvol])) setcookie($snapvol, 'true' ,  3650, '/' );

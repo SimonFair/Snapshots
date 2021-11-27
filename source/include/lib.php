@@ -779,7 +779,7 @@ function process_subvolumes3($btrfs_list,$line, $uuid){
 
 		
 					$btrfs_list[$line][$subvol]["short_vol"] = "~RECEIVED" ;
-					 $btrfs_list[$line][$subvol]["subvolume"][$vkey] = [		
+					 $btrfs_list[$line][$subvol]["subvolume"][$vline["short_vol"]] = [		
 					'uuid' =>$vline['uuid'],
 					'puuid' =>$vline['puuid'],
 					'ruuid' => $vline['ruuid'],
