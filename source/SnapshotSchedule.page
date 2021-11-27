@@ -247,7 +247,7 @@ _(VM options)_:
 :vms_host_shutdown_help:
 
 _(VM shutdown time-out)_:
-: <input type="number" id="vm_shutdown_timeout" name="shutdowntimeout" value="<?=htmlspecialchars($domain_cfg['TIMEOUT'])?>" class="narrow">
+: <input type="number" id="vm_shutdown_timeout" name="shutdowntimeout" value="<?=htmlspecialchars($subvolsch["shutdowntimeout"])?>" class="narrow">
 
 :vms_shutdown_timeout_help:
 

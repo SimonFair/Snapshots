@@ -202,17 +202,26 @@ case 'sv2':
          }
          $parm="{$path}\",\"{$subvol}" ;
       
+
+         $slots=get_subvol_schedule_slots($path) ;
+         if ($slots == FALSE) {
+            $slots=array() ; 
+         #  $slots["0"]["snapscheduleenable"] = "" ;
+         }
+         ksort($slots) ;
+         $slotcount=count($slots) ;
+
       echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
       echo "<td><a href=\"/Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
-      echo "<td></td><td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
-
-      $slots=get_subvol_schedule_slots($path) ;
-      ksort($slots) ;
-      $slotcount=count($slots) ;
-       if ($slots == FALSE) {
-         $slots=array() ; 
-        $slots["0"]["snapscheduleenable"] = "" ;
+      if ($slotcount<1) {
+         echo "<td><i class=\"fa fa-circle orb grey-orb middle\" title=\"Undefined\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a></td>" ;
+      } else {
+      echo "<td></td>" ;
       }
+      echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
+
+  
+
       # Show Schedule Slots upto 10.
       foreach($slots as $slot=>$slotdetail) {
 

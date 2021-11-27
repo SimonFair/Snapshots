@@ -30,6 +30,7 @@ $arg2 = $argv[2];
 $dummyrun = false ;
 $dummyrundel = true ;
 
+
 /*
 
 Start processing Snapshots read config.
@@ -144,8 +145,27 @@ foreach($vms as $vm) {
 */
 if ($vms != NULL && $vms_running) {
 	
-if ($logging == "yes") snap_manager_log("Waiting For VMs to be processed. Sleep(".$schedule['shutdowntimeout'].")");
-sleep($schedule["shutdowntimeout"]) ;
+#if ($logging == "yes") snap_manager_log("Waiting For VMs to be processed. Sleep(".$schedule['shutdowntimeout'].")");
+$waitcheck = ($schedule["shutdowntimeout"]/10) ;
+if ($logging == "yes") snap_manager_log("Waiting For VMs to be processed. Sleep(".$schedule['shutdowntimeout'].") Checks $waitcheck");
+for ($wait = 0 ; $wait <= $waitcheck ; $wait++)
+{
+	sleep(10) ;
+	$vm_stillrunning = false ;
+	foreach($vm_state as $vm=>$state) {
+		$vm_output=NULL ;
+		exec ('virsh domstate "'.$vm.'"', $vm_output) ;
+	    if ($vm_output[0]=="running") {$vm_stillrunning = true ; break ; }
+		var_dump($vm, $vm_output[0]) ;
+	}
+
+	var_dump($vm_stillrunning) ;
+	if ($vm_stillrunning == false) {
+		if ($logging == "yes") snap_manager_log("Waiting For VMs to be processed. $wait All VMs in correct state continue");
+		break ;
+	}
+}
+#sleep($schedule["shutdowntimeout"]) ;
 }
 
 if ($dummyrun == true)
@@ -183,6 +203,7 @@ if ($vms_running) {
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Started");
 			break ;
 		case "suspend":
+			if ($vm_state[$vm] == "paused") break ;
 			exec ('virsh resume "'.$vm.'"', $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Resumed");
 			break ;
@@ -204,6 +225,14 @@ if ($schedule["snapsend"] == "local")
 		exec('btrfs send '.$snapshoty.' | btrfs receive '.$sendshot , $result, $error) ;
 		snap_manager_log('btrfs snapshot send '.$snapshoty.' To '.$sendshot.' '.$error.' '.$result[0]) ;
   }
+
+#btrfs send  /mnt/cache/snaps/vol-202111271300 | ssh root@unraid.home "btrfs receive /mnt/cache/snaps/unraid"
+  if ($schedule["snapsend"] == "remote") 
+  {
+	  	$host = $schedule["remotehost"] ;
+		exec('btrfs send '.$snapshoty.' | ssh root@'.$host.' "btrfs receive '.$sendshot.'"' , $result, $error) ;
+		snap_manager_log('btrfs snapshot send remote'.$snapshoty.' To root@'.$host.' ' .$sendshot.' '.$error.' '.$result[0]) ;
+  }  
 
 /* Send Remote */
 
