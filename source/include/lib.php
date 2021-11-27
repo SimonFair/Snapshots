@@ -680,6 +680,7 @@ function build_list3($lines) {
 		}
 		#var_dump($btrfs_uuid) ;
 		$btrfs_list = process_subvolumes3($btrfs_list,$line,$btrfs_uuid) ;
+		$btrfs_list = process_received($btrfs_list,$line) ;
 	}
 	ksort($btrfs_list, SORT_NATURAL) ;
 return($btrfs_list) ;
@@ -707,15 +708,16 @@ function process_subvolumes3($btrfs_list,$line, $uuid){
 				if ($ruuid != "-" ) {
 					$incremental = $subvol ;
 					$subvol = "~INCREMENTAL" ;
+					$btrfs_list[$line][$subvol]["short_vol"] = $subvol ;
 				} else { $incremental = NULL ;}
 	
 				#if (substr($arrMatch["path"] ,0, 9) == "<FS_TREE>")  $arrMatch["path"] = substr($arrMatch["path"] ,10 ) ;				
-			 
+				
 				 $btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = [		
-				 'uuid' =>$arrMatch['uuid'],
-				   'puuid' =>$arrMatch['puuid'],
-				   'ruuid' => $arrMatch['ruuid'],
-				   'snap' => true,
+				'uuid' =>$arrMatch['uuid'],
+				'puuid' =>$arrMatch['puuid'],
+				'ruuid' => $arrMatch['ruuid'],
+				'snap' => true,
 				'odate' => 	$arrMatch['odate'],
 				'otime' => $arrMatch['otime'],
 				'vol' => $line,
@@ -735,7 +737,67 @@ function process_subvolumes3($btrfs_list,$line, $uuid){
 		}
 		return($btrfs_list) ;
 	}
-	
+
+	function process_received($btrfs_list,$line){
+		# Process Receieved Snapshots
+		#
+		$volume=$btrfs_list[$line] ;
+			foreach ($volume as $vkey=>$vline) {
+		
+		/*
+
+		 ["snaps/vol-202111271514"]=>
+    array(7) {
+      ["uuid"]=>
+      string(36) "c7689978-06d5-a34b-9c57-c726784fa98c"
+      ["puuid"]=>
+      string(1) "-"
+      ["ruuid"]=>
+      string(36) "0e6cf6d5-3041-b240-996c-1236f1c2d0d4"
+      ["snap"]=>
+      bool(false)
+      ["vol"]=>
+      string(8) "/mnt/vms"
+      ["path"]=>
+      string(22) "snaps/vol-202111271514"
+      ["property"]=>
+      array(1) {
+        ["ro"]=>
+        string(4) "true"
+      }
+    }
+
+	*/
+				$puuid=$vline["puuid"] ;
+				$ruuid=$vline["ruuid"] ;
+
+				if ($parent = '-' && $ruuid != '-' && $vline["short_vol"] != "~INCREMENTAL") {
+						unset($btrfs_list[$line][$vline["path"]]) ;
+		
+					$subvol = "~RECIEVED" ; 
+					$incremental = NULL ;
+
+		
+					$btrfs_list[$line][$subvol]["short_vol"] = "~RECEIVED" ;
+					 $btrfs_list[$line][$subvol]["subvolume"][$vkey] = [		
+					'uuid' =>$vline['uuid'],
+					'puuid' =>$vline['puuid'],
+					'ruuid' => $vline['ruuid'],
+					'snap' => true,
+					'odate' => 	$vline['odate'],
+					'otime' => $vline['otime'],
+					'vol' => $line,
+					'incremental' => $incremental,
+					'property' => $vline["property"] ,
+					'path' => $vline["path"] 
+					  ];
+		
+				} 
+					
+			}
+			
+		return($btrfs_list) ;
+	}
 
 function subvol_parents() {
 	$btrfs_list = array() ;

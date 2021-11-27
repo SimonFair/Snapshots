@@ -360,9 +360,9 @@ case 'sv2':
           $list= json_decode(file_get_contents($config_file_json), true) ;
            echo "<tr><td>" ;
            #var_dump($_COOKIE) ;
-           var_dump($list) ;
+       #    var_dump($list) ;
            echo "</td></tr>" ;
-           $list=build_list2($targetcli) ;
+           $list=build_list3($targetcli) ;
            echo "<tr><td>" ;
            var_dump($list) ;
            echo "</td></tr>" ;
