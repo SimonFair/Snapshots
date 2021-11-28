@@ -180,6 +180,19 @@ if ($dummyrun == true)
 	
   }
 
+/* Save Snapshot list before new snapshot. */
+
+$parents=subvol_parents() ;
+$parent=$parents[$subvol]["vol"].'/' ;
+$lines[]=$parent ;
+exec(' df -t btrfs --output="target" ',$df);
+
+$list = build_list3($df) ;
+#var_dump($df) ;
+$list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
+#var_dump($list) ;
+$snaps_save=array_reverse($list) ;
+
 /* Create Snapshot Readonly */
 
 if ($readonly == "true")  $readonly = "-r" ; else $readonly="" ;
@@ -219,24 +232,27 @@ if ($vms_running) {
 
 } 
 
+
 /* Send Snapshot */
-/*
+
 # If incremental get 1st 
 #var_dump($schedule) ;
 if ($schedule["snapincremental"] == "yes") {
 	if (isset($schedule["mastersnap"])) $get_previous = $schedule["mastersnap"] ; else $get_previous = "" ;
 	if ($get_previous == "") {
-		#Find Previous
+		$get_previous_array = reset($snaps_save) ;
+		$get_previous =  $get_previous_array["vol"]."/".$get_previous_array["path"] ; 
 	}
 	var_dump($get_previous) ;
-}*/
+}
 /* Send Local */
 var_dump($sendshot) ;
 if ($schedule["snapsend"] == "local") 
   {
 	  	$result = "" ;
-		exec('btrfs send '.$snapshoty.' | btrfs receive '.$sendshot , $result, $error) ;
-		snap_manager_log('btrfs snapshot send '.$snapshoty.' To '.$sendshot.' '.$error.' '.$result[0]) ;
+		if ($schedule["snapincremental"] == "yes") $inc_cmd = "-p ".$get_previous." " ; else $inc_cmd = "" ; 
+		exec('btrfs send '.$inc_cmd.$snapshoty.' | btrfs receive '.$sendshot , $result, $error) ;
+		snap_manager_log('btrfs snapshot send '.$inc_cmd.$snapshoty.' To '.$sendshot.' '.$error.' '.$result[0]) ;
   }
 
 
@@ -247,8 +263,9 @@ if ($schedule["snapsend"] == "remote")
 {
 		$host = $schedule["remotehost"] ;
 		$result = "" ;
-	  exec('btrfs send '.$snapshoty.' | ssh root@'.$host.' "btrfs receive '.$sendshot.'"' , $result, $error) ;
-	  snap_manager_log('btrfs snapshot send remote'.$snapshoty.' To root@'.$host.' ' .$sendshot.' '.$error.' '.$result[0]) ;
+		if ($schedule["snapincremental"] == "yes") $inc_cmd = "-p ".$get_previous." " ; else $inc_cmd = "" ; 
+	  exec('btrfs send '.$inc_cmd.$snapshoty.' | ssh root@'.$host.' "btrfs receive '.$sendshot.'"' , $result, $error) ;
+	  snap_manager_log('btrfs snapshot send remote '.$inc_cmd.$snapshoty.' To root@'.$host.' ' .$sendshot.' '.$error.' '.$result[0]) ;
 }  
 
 
