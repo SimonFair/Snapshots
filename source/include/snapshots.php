@@ -168,20 +168,21 @@ case 'sv2':
          if ($snapdetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
         
          $snap=$snapdetail["short_vol"] ;
-         echo "<tr><td>\t".$snap.'</td>' ;
-         #echo "<td>" ;
-         #echo '   <input type="checkbox" class="iscsi'.$dname.'" value="'.$iscsiset.'" </td>'  ;
          $remove = $snapdetail["vol"]."/".$snap ;
          $path=$snapdetail["vol"].'/'.$snap ; 
 
-      if (isset($volsettings[$path])) {
+         if ($snap != "~RECEIVED" && $snap!= "~INCREMENTAL") {
+         echo "<tr><td>\t".$snap.'</td>' ;
+
+
+      if (isset($volsettings[$path]["default"])) {
          $subvoldft = $volsettings[$path]["default"] ;
       } else { $subvoldft = _("Undefined") ;}
          echo '<td>' ;
          echo $subvoldft ;
          echo "</td>" ;
 
-         if (isset($volsettings[$path])) {
+         if (isset($volsettings[$path]["sendto"])) {
             $subvolsendto = $volsettings[$path]["sendto"] ;
          } else { $subvolsendto = _("Undefined") ;}
          echo '<td>' ;
@@ -287,7 +288,7 @@ case 'sv2':
       #echo "<td>{$slotcount}</td></tr>" ;
       echo "<td></td></tr>" ;
       }
-      
+   }
 
       $snapvol=$snap;
       $snapvol=$path ;
@@ -299,7 +300,7 @@ case 'sv2':
       } else {
       $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
       }
-      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
       
          
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {

@@ -98,6 +98,9 @@ Shutdown, Suspend, Hibernate.
 
 */
 $vms=explode(",", $schedule["vmselection"]) ;
+$vms_running = false ;
+var_dump($vms) ;
+if ($vms[0] != "") {
 $vm_state=array() ;
 foreach($vms as $vm) {
 	$vm_output=NULL ;
@@ -107,7 +110,7 @@ foreach($vms as $vm) {
 }
 var_dump($vm_state) ;
 $hostoption=$schedule["hostoption"] ;
-$vms_running = false ;
+
 
 foreach($vms as $vm) {
 	if ($vm_state[$vm] == "shut off") continue ;
@@ -127,7 +130,7 @@ foreach($vms as $vm) {
 			break ;
 		}				
 
-
+	}
 } 
 /* 
 #root@computenode:/usr/local/emhttp/plugins/snapshots/include# virsh suspend "Windows 11"
@@ -217,24 +220,37 @@ if ($vms_running) {
 } 
 
 /* Send Snapshot */
-
+/*
+# If incremental get 1st 
+#var_dump($schedule) ;
+if ($schedule["snapincremental"] == "yes") {
+	if (isset($schedule["mastersnap"])) $get_previous = $schedule["mastersnap"] ; else $get_previous = "" ;
+	if ($get_previous == "") {
+		#Find Previous
+	}
+	var_dump($get_previous) ;
+}*/
 /* Send Local */
 var_dump($sendshot) ;
 if ($schedule["snapsend"] == "local") 
   {
+	  	$result = "" ;
 		exec('btrfs send '.$snapshoty.' | btrfs receive '.$sendshot , $result, $error) ;
 		snap_manager_log('btrfs snapshot send '.$snapshoty.' To '.$sendshot.' '.$error.' '.$result[0]) ;
   }
 
-#btrfs send  /mnt/cache/snaps/vol-202111271300 | ssh root@unraid.home "btrfs receive /mnt/cache/snaps/unraid"
-  if ($schedule["snapsend"] == "remote") 
-  {
-	  	$host = $schedule["remotehost"] ;
-		exec('btrfs send '.$snapshoty.' | ssh root@'.$host.' "btrfs receive '.$sendshot.'"' , $result, $error) ;
-		snap_manager_log('btrfs snapshot send remote'.$snapshoty.' To root@'.$host.' ' .$sendshot.' '.$error.' '.$result[0]) ;
-  }  
 
 /* Send Remote */
+
+#btrfs send  /mnt/cache/snaps/vol-202111271300 | ssh root@unraid.home "btrfs receive /mnt/cache/snaps/unraid"
+if ($schedule["snapsend"] == "remote") 
+{
+		$host = $schedule["remotehost"] ;
+		$result = "" ;
+	  exec('btrfs send '.$snapshoty.' | ssh root@'.$host.' "btrfs receive '.$sendshot.'"' , $result, $error) ;
+	  snap_manager_log('btrfs snapshot send remote'.$snapshoty.' To root@'.$host.' ' .$sendshot.' '.$error.' '.$result[0]) ;
+}  
+
 
 /* Delete old snaps */
 

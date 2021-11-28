@@ -277,10 +277,10 @@ _(Remove Snaps/Sends )_:
 &nbsp;_( Function not implemented.)_
 
  _(Snapshot Prefix)_:
-: <input type="text" name="subvolprefix"  value="<?=$subvolsch['subvolprefix']?>" placeholder="Default" class="narrow"/>_(Function not implemented.)_
+: <input type="text" name="subvolprefix"  value="<?=$subvolsch['subvolprefix']?>" placeholder="Default" class="narrow"/>
 
  _(Send to location)_:
-: <input type="text" name="subvolsendto"  value="<?=$subvolsch['subvolsendto']?>" placeholder="Default" class="narrow"/>_(Function not implemented.)_
+: <input type="text" name="subvolsendto"  value="<?=$subvolsch['subvolsendto']?>" placeholder="Default" class="narrow"/>
 
 
 <?endif;?>
