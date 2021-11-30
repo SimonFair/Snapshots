@@ -331,6 +331,7 @@ case 'sv2':
             }
             $parm="{$path}\",\"{$dftsend}" ;
           #  echo "</td><td> ".make_button("Send", "send_snapshot", $parm).make_button("Send Incremental", "send_inc_snapshot", $parm)."</td><td></td><td></td>" ;
+            #echo "</td><td> ".make_button("Send", "send_snapshot", $parm).make_button("Send Inc", "send_inc_snapshot", $parm)."</td><td></td><td></td>" ;
             echo "</td><td> ".make_button("Send", "send_snapshot", $parm)."</td><td></td><td></td>" ;
             #<i class='fa fa-usb' aria-hidden=true></i>
          
@@ -369,6 +370,18 @@ case 'sv2':
            var_dump($list) ;
            echo "</td></tr>" ;
            break;
+
+
+           case 'zs1':
+        
+            # exec(' cat /mnt/cache/appdata/snapcmd/dflist ',$targetcli);
+             exec(' df -t zfs --output="target" ',$targetcli);
+               
+ 
+                       echo "<tr><td>" ;
+                var_dump($targetcli) ;
+                echo "</td></tr>" ;
+                break;
 
       case 'run_schedule':
          $subvol = urldecode(($_POST['subvol']));
@@ -488,15 +501,4 @@ case 'sv2':
     
 }
 
-/*
-function remove_vm_mapping($source) {
-	$config_file = $GLOBALS["paths"]["vm_mappings"];;
-	$config = @parse_ini_file($config_file, true);
-	if ( isset($config[$source]) ) {
-		usb_manager_log("Removing configuration '$source'.");
-	}	
-	unset($config[$source]);
-	save_ini_file($config_file, $config);
-	return (! isset($config[$source])) ? TRUE : FALSE;
-	}
-   */
+

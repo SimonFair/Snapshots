@@ -27,7 +27,8 @@ require_once "$docroot/plugins/dynamix.vm.manager/include/libvirt_helpers.php";
 require_once("plugins/{$plugin}/include/lib.php");
 $setup = true;
 
-$_SESSION['availablevms'] = $lv->get_domains();
+$libvirt_up        = $libvirt_running=='yes';
+if ($libvirt_up)  $_SESSION['availablevms'] = $lv->get_domains(); else $_SESSION['availablevms'] = array() ;
 if (isset($_GET['s'])) {
 	$serial = $_GET['s'];
   	$seq = $_GET['seq'];

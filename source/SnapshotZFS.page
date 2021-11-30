@@ -1,6 +1,7 @@
 Menu="Snapshots"
-Title="BTRFS Volumes"
+Title="ZFS Volumes"
 icon="fa-file"
+cond=which zfs | grep -c zfs
 ---
 <?PHP
 /* Copyright 2020-2020, Simon Fairweather
@@ -76,14 +77,14 @@ table.snapshot tr td:empty {  width: 50px; }
 
 
 $(function(){
-$('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2'});  
-$('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});  
+$('#zs1').load('/plugins/snapshots/include/snapshots.php',{table:'zs1'});  
 
 
 
 
 
-	$("#sv2").arrive("tr",{onceOnly:false},function()
+
+	$("#zs1").arrive("tr",{onceOnly:false},function()
 	{
 		tr = $(this);
 
@@ -209,47 +210,6 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 		});
 	}
 
-
-	function usbip_attach(el, op, device) {
-		/* add spinning and disable button */
-
-		
-		$("button[hostport='"+device+"']").html("<i class='fa fa-circle-o-notch fa-spin'></i> "+(op == "attach" ? "<?=_('Attaching');?>" : "<?=_('Unbinding');?>"));
-		$("button[hostport='"+device+"']").prop("disabled","true"); 
-
-		$.post(SNAPURL,{'action':op,'hostport':device}).done(function(data)
-		{
-
-		/* $("button[device='"+device+"']").html(" "+(op == "bind" ? "<?=_('Unbind');?>" : "<?=_('attach');?>"));*/
-		
-		usb_disks(tab_usbdisks) ;
-		});
-	}
-
-
-	function usbip_detach(el, op, port) {
-		/* add spinning and disable button */
-
-		
-		$("button[port='"+port+"']").html("<i class='fa fa-circle-o-notch fa-spin'></i> "+(op == "detach" ? "<?=_('Detaching');?>" : "<?=_('Unbinding');?>"));
-		$("button[port='"+port+"']").prop("disabled","true"); 
-
-		$.post(SNAPURL,{'action':op,'port':port}).done(function(data)
-		{
-
-		/* $("button[port='"+port+"']").html(" "+(op == "detach" ? "<?=_('Unbind');?>" : "<?=_('Bind');?>"));*/
-		
-		usb_disks(tab_usbdisks) ;
-		});
-	}
-
-	
-	function send_inc_snapshot(vol, snap, prev) {
-		/* add spinning and disable button */
-
-		prev = "Test setup" ;
-		send_winc_snapshot(vol, snap, prev) ;
-	}
 
 
 	function pin_tab(n) {
@@ -624,14 +584,12 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 }
 </script>
 
-_(Snapshots BTRFS)_
+_(Snapshots ZFS)_
 
-<pre><form id="SnapBTRFS" onsubmit="return false"><table id='sv2' class='disk_status snapshot'><tr><td><div class="spinner"></div></td></tr></table></form></pre><br>
+<pre><form id="SnapZFS" onsubmit="return false"><table id='zs1' class='disk_status snapshot'><tr><td><div class="spinner"></div></td></tr></table></form></pre><br>
 
 
 <input type="button" value="_(Done)_" onclick="done()">
-
-te
 
 
 <div style="display:none;" data-survey-name="create_subvolume" data-survey-title="<?=_('Create Subvolume');?>">
