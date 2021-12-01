@@ -321,26 +321,9 @@ function snap_manager_log($m, $type = "NOTICE") {
 }
 
 
-
-
-function build_lunindex($tluns) {
-	 
-    
-	foreach ($tluns as $lun) {
-	  $indexlun[$lun["index"]] = $lun ;
-	}
-	
-	return $indexlun ;
-}    
-
-
-
-
 function alert($msg) {
     echo "<script type='text/javascript'>alert('$msg');</script>";
 }
-
-
 
 function build_volume($line) {
          		#if (preg_match('/^.+: ID (?P<id>\S+)(?P<name>.*)$/', $strUSBDevice, $arrMatch)) {
@@ -832,3 +815,116 @@ return($btrfs_list) ;
 
 }
 
+function build_list_zfs($lines) {
+	$zfs_list = array() ;
+	$zfs_uuid = array() ;
+	$pools=null ;
+	exec('zpool list -H',$pools);
+	$pools = preg_replace('/\s+/', ' ', $pools);
+	foreach ($pools as $pool_detail) {
+	#	if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
+		$pool=explode(" ",$pool_detail) ; 
+		$pool_name = $pool[0] ;
+		$pool_status = $pool[10] ;
+		$zfs_list[$pool_name]["~config"]["SIZE"] = $pool[1] ;
+		$zfs_list[$pool_name]["~config"]["ALLOC"] = $pool[2] ;
+		$zfs_list[$pool_name]["~config"]["FREE"] = $pool[3] ;
+		$zfs_list[$pool_name]["~config"]["CKPOINT"] = $pool[4] ;
+		$zfs_list[$pool_name]["~config"]["EXPANDSZ"] = $pool[5] ;
+		$zfs_list[$pool_name]["~config"]["FRAG"] = $pool[6] ;
+		$zfs_list[$pool_name]["~config"]["CAP"] = $pool[7] ;
+		$zfs_list[$pool_name]["~config"]["DEDUP"] = $pool[8] ;
+		$zfs_list[$pool_name]["~config"]["HEALTH"] = $pool[9] ;
+		$zfs_list[$pool_name]["~config"]["ALTROOT"] = $pool[10] ;
+
+		$vol=NULL ;
+		#exec(' cat /mnt/cache/appdata/snapcmd/'.$line ,$vol);
+		$zfs = null ;
+		exec('zfs list -H',$zfs);
+		$zfs = preg_replace('/\s+/', ' ', $zfs);
+		#$vol = NULL ;
+		if ($pool_name != NULL) {
+			foreach ($zfs as $zfs_detail) 
+			{
+			$zfsline=explode(" ",$zfs_detail) ; 
+			$zfs_name = $zfsline[0] ;	
+			$zfs_list[$pool_name][$zfs_name] =	[	
+				'USED' =>$zfsline[1],
+				'AVAIL' =>$zfsline[2],
+				'REFER' => $zfsline[3],
+				'MOUNTPOINT' => $zfsline[4],
+				'string' => $zfs_detail,
+			] ;
+				}
+			
+		} else 
+		{
+			$zfs_list[$pol_name] =  NULL ;/*[		
+
+			'snap' => false,
+			'vol' => $line,
+			]; */
+		}
+		#var_dump($btrfs_uuid) ;
+
+		$zfs=null ;
+		exec('zfs list -H -t snapshot',$zfs);
+		$zfs = preg_replace('/\s+/', ' ', $zfs);
+		#$vol = NULL ;
+		if ($pool_name != NULL) {
+			foreach ($zfs as $zfs_detail) 
+			{
+			$zfsline=explode(" ",$zfs_detail) ; 
+			$zfs_name = explode("@",$zfsline[0]) ;	
+			
+			$zfs_list[$pool_name][$zfs_name[0]]["snapshots"][$zfs_name[1]] =	[	
+				'USED' =>$zfsline[1],
+				'AVAIL' =>$zfsline[2],
+				'REFER' => $zfsline[3],
+				'MOUNTPOINT' => $zfsline[4],
+				'string' => $zfs_detail,
+			] ;
+				}
+		}
+
+	}
+	ksort($zfs_list, SORT_NATURAL) ;
+return($zfs_list) ;
+
+}
+function zfs_list()
+{
+	exec('zfs list -H ',$targetcli);
+	$output = preg_replace('/\s+/', ' ', $targetcli);
+	echo "<tr><td>" ;
+var_dump($output) ;
+echo "</td></tr>" ;
+echo "<tr><td>" ;
+var_dump(explode(" ",$output[0] )) ;
+echo "</td></tr>" ;
+
+
+exec('zpool list -H ',$targetcli);
+
+$output = preg_replace('/\s+/', ' ', $targetcli);
+		echo "<tr><td>" ;
+ var_dump($output) ;
+ echo "</td></tr>" ;
+ echo "<tr><td>" ;
+ var_dump(explode(" ",$output[0] )) ;
+ echo "</td></tr>" ;
+
+ 
+exec('zfs list -H -t snapshot ',$targetcli);
+
+$output = preg_replace('/\s+/', ' ', $targetcli);
+		echo "<tr><td>" ;
+ var_dump($output) ;
+ echo "</td></tr>" ;
+ echo "<tr><td>" ;
+ var_dump(explode(" ",$output[0] )) ;
+ echo "</td></tr>" ;
+
+
+
+}

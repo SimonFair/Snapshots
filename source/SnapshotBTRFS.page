@@ -631,9 +631,6 @@ _(Snapshots BTRFS)_
 
 <input type="button" value="_(Done)_" onclick="done()">
 
-te
-
-
 <div style="display:none;" data-survey-name="create_subvolume" data-survey-title="<?=_('Create Subvolume');?>">
 
 	<div data-question data-question-title="<?=_('Subvolume Name');?>" data-question-button-done="<?=_('Create');?>">

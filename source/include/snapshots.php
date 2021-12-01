@@ -371,17 +371,239 @@ case 'sv2':
            echo "</td></tr>" ;
            break;
 
+           case 'db2':
+        
+            # exec(' cat /mnt/cache/appdata/snapcmd/dflist ',$targetcli);
+            exec('zfs list -H ',$targetcli);
+
+            echo "</td></tr>" ;
+            $list=build_list_zfs($targetcli) ;
+            echo "<tr><td>" ;
+            var_dump($list) ;
+               
+     
+                   
+ 
+                break;
+
 
            case 'zs1':
         
-            # exec(' cat /mnt/cache/appdata/snapcmd/dflist ',$targetcli);
-             exec(' df -t zfs --output="target" ',$targetcli);
-               
- 
-                       echo "<tr><td>" ;
-                var_dump($targetcli) ;
-                echo "</td></tr>" ;
-                break;
+
+   $urlpath    =  $_GET['path'] ;
+
+   $config_file = $GLOBALS["paths"]["subvol_settings"];
+	$volsettings = @parse_ini_file($config_file, true);
+      
+   echo "<thead><tr><td>"._("Pool/Filesystem/Snapshot")."<td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('Browse')."</td>" ;
+
+   echo "</tr></thead>";
+   echo "<tbody><tr>";
+   exec(' df -t btrfs --output="target" ',$targetcli);
+   $list=build_list_zfs($targetcli) ;
+   # echo "<tr><td>" ;var_dump( $btrfs_volumes) ;echo "</td></tr>" ;
+
+            
+            
+   $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='Create Subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
+
+   foreach ($list as $key=>$vline) {
+      
+      #echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$vline["vol"]["vol"].'/')."</td>tr>";
+      #echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><td></td></td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
+      echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td>Size:".$vline["~config"]["SIZE"]."</td><td>Status :".$vline["~config"]["HEALTH"]."</td><td></td><td></td><td></td><td><td></td></td><td></td><tr>";
+      #$ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
+      if ($vline != NULL) {
+         foreach ($vline as $snapkey=>$snapdetail) {
+         # echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',$vline)."</td></tr>";
+         if ($snapdetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
+        
+         $snap=$snapkey ;
+         $remove = $snapdetail["vol"]."/".$snap ;
+         $path=$snapdetail["vol"].'/'.$snap ; 
+         if ($snap == "~config") continue ;
+         if ($snap != "~RECEIVED" && $snap!= "~INCREMENTAL") {
+         echo "<tr><td>\t".$snap.'</td>' ;
+
+
+      if (isset($volsettings[$path]["default"])) {
+         $subvoldft = $volsettings[$path]["default"] ;
+      } else { $subvoldft = _("Undefined") ;}
+         echo '<td>' ;
+       #  echo $subvoldft ;
+         echo "</td>" ;
+
+         if (isset($volsettings[$path]["sendto"])) {
+            $subvolsendto = $volsettings[$path]["sendto"] ;
+         } else { $subvolsendto = _("Undefined") ;}
+         echo '<td>' ;
+        # echo $subvolsendto ;
+         echo "</td>" ;
+
+
+      
+        # echo '<td><input type="checkbox" '.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
+
+        # echo "<td title='"._("Delete Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
+         $mpoint			.= "<i class='fa fa-pencil partition-hdd'></i><a title='"._("Change Disk Mount Point")."' class='exec' onclick='chg_mountpoint(\"{$partition['serial']}\",\"{$partition['part']}\",\"{$device}\",\"{$partition['fstype']}\",\"{$mount_point}\",\"{$disk_label}\");'>{$mount_point}</a>";
+         $mpoint			.= "{$rm_partition}</span>";
+         if ($subvoldft != _("Undefined")) {
+            $subvol=$subvoldft ;
+         } else {
+         $subvol=$path ;
+         }
+         $parm="{$path}\",\"{$subvol}" ;
+      
+
+         $slots=get_subvol_schedule_slots($path) ;
+         if ($slots == FALSE) {
+            $slots=array() ; 
+         #  $slots["0"]["snapscheduleenable"] = "" ;
+         }
+         ksort($slots) ;
+         $slotcount=count($slots) ;
+
+      echo "</td><td></td>" ;
+      #echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
+      #echo "<td><a href=\"/Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
+   #   if ($slotcount<1) {
+    #     echo "<td><i class=\"fa fa-circle orb grey-orb middle\" title=\"Undefined\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a></td>" ;
+    #  } else {
+    #  echo "<td></td>" ;
+    #  }
+    echo "<td></td><td></td>" ;
+    echo "<td></td><td></td>" ;
+      echo "<td><a href=\"Browse?dir=".urlencode($snapdetail["MOUNTPOINT"])."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$snapdetail["MOUNTPOINT"]."\"></i></a></td></tr>";
+
+  
+
+      # Show Schedule Slots upto 10.
+      foreach($slots as $slot=>$slotdetail) {
+
+       echo "<tr><td>\t  Schedule Slot: {$slot}</td>" ;
+
+       if (isset($slotdetail["subvolprefix"]) && $slotdetail["subvolprefix"] != "" ) {
+         $slotsubvoldft = $slotdetail["subvolprefix"];
+      } else { $slotsubvoldft = _("Default") ;}
+         echo '<td>' ;
+         echo $slotsubvoldft ;
+         echo "</td>" ;
+
+         if (isset($slotdetail["subvolsendto"]) && $slotdetail["subvolsendto"] != "") {
+            $slotsubvolsendto = $slotdetail["subvolsendto"] ;
+         } else { $slotsubvolsendto = _("Default") ;}
+         echo '<td>' ;
+         echo $slotsubvolsendto ;
+         echo "</td>" ;
+         echo "<td></td>" ;
+       echo  "<td title='"._("Remove Schedule Slot")." {$slot}'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_schedule_slot(\"{$path}\",\"{$slot}\")'><i class='fa fa-remove hdd'></a>";
+
+
+
+      # Set Orb Colour based on Schedule status, Green enabled, Red Disabled, Grey not definded.
+
+      #$schedule_state=get_subvol_sch_config($path, "snapscheduleenabled") ;
+      $schedule_state=$slotdetail["snapscheduleenabled"] ;
+      switch($schedule_state)  {
+         case 'yes' :
+               $colour = "green" ; 
+               $colour_lable="Enabled" ;
+               $run_disabled = "" ;
+               break ;
+         case 'no' :   
+            $colour = "red" ;
+            $colour_lable="Disabled";
+            $run_disabled = "disabled";
+             break ;
+         default :   
+            $colour = "grey" ;
+            $colour_lable="Undefined";
+            $run_disabled = "disabled";
+            break ;
+      } 
+
+      echo "<td>" ;
+      $pid = file_exists('/var/run/snap'.urlencode($path).'.pid') ;
+      #$pid =true ; 
+   /*   if ($pid) {
+         echo make_button("Running", "run_schedule", $parm, 'disabled') ;
+      } else  echo make_button("Run Now", "run_schedule", "{$path}\",\"{$slot}", $run_disabled) ; */
+      echo "</td>" ;
+
+      #$colour="grey" ;
+      $seq=$slot ;
+    #  echo "<td><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode($seq)."\"><i class='fa fa-clock-o' title=\""._('Schedule').$path."\"></i></a></td>" ;
+
+    #  echo "<td><i class=\"fa fa-circle orb ".$colour."-orb middle\" title=\"".$colour_lable."\"></i>" ;
+     # echo  "<a onclick='add_schedule_slot(\"{$path}\")'><i title='"._("Add Schedule Slot")." {$slot}' class='fa fa-plus'></a>";
+      if ($slotcount <7) echo "<a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a>" ;
+      echo "</td>" ;
+      # echo "<td><a href=\"Browse?dir=".urlencode($path)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$path."\"></i></a></td></tr>";
+      #echo "<td>{$slotcount}</td></tr>" ;
+      echo "<td></td></tr>" ;
+      }
+   }
+
+      $snapvol=$snap;
+      $snapvol=$snapkey;
+      $snapvol=str_replace( "/", "-", $snapvol) ;
+      $snapvol=str_replace( "~", "-", $snapvol) ;
+      if ($_COOKIE[$snapvol] == "false" || !isset($_COOKIE[$snapvol])) {
+         $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-plus-square fa-append'></i></span>" ;
+         if (!isset($_COOKIE[$snapvol])) setcookie($snapvol, 'true' ,  3650, '/' );
+      } else {
+      $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
+      }
+      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      
+         
+         foreach ($snapdetail["snapshots"] as $subvolname=>$subvoldetail) {
+            
+            if ($subvoldetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
+            #(! $disk['show_partitions']) || $disk['partitions'][0]['pass_through'] ? $style = "style='display:none;'" : $style = "";
+            $style = "style='display:none;'" ;
+            $style ="" ;
+           # echo "<tr class=toggle-parts toggle-snaps-".basename($snapvol)."' name='toggle-snaps-".basename($snapvol)."' $style><td>\t\t".$subvolname.'</td>' ;
+            if ($_COOKIE[$snapvol] == "true" || !isset($_COOKIE[$snapvol])) $style = "  " ; else $style = " hidden "  ;
+            $hostport = $snapvol ;
+            echo "<tr class='toggle-parts toggle-rmtip-".$hostport."' name='toggle-rmtip-".$hostport."'".$style.">" ;
+            echo "<td>\t\t".$subvolname."</td><td></td>" ;
+            #echo '<td><input type="text" style="width: 150px;" name="'.$iscsinickname.'" placeholder="Send Path" ' ;
+            if ($subvoldetail["incremental"] != "" ) echo 'Parent:'.$subvoldetail["incremental"] ;
+            echo "</td>" ;
+            echo '<td>' ; echo "</td>" ;
+            $remove = $subvoldetail["vol"]."/".$subvolname ;
+            $path=$subvoldetail["vol"].'/'.$subvolname ;
+      #      echo '<td><input type="checkbox"'.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
+
+      #      echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
+            echo '</td>' ;
+            $dftsend = "/mnt/VMs/test" ;
+            if ($subvolsendto != _("Undefined")) {
+               $dftsend=$subvolsendto ;
+            } else {
+            $dftsend=$path ;
+            }
+            $parm="{$path}\",\"{$dftsend}" ;
+          #  echo "</td><td> ".make_button("Send", "send_snapshot", $parm).make_button("Send Incremental", "send_inc_snapshot", $parm)."</td><td></td><td></td>" ;
+            #echo "</td><td> ".make_button("Send", "send_snapshot", $parm).make_button("Send Inc", "send_inc_snapshot", $parm)."</td><td></td><td></td>" ;
+           # echo "</td><td> ".make_button("Send", "send_snapshot", $parm)."</td><td></td><td></td>" ;
+            echo "</td><td> </td><td></td><td></td>" ;
+            echo "<td></td><td></td>" ;
+            #<i class='fa fa-usb' aria-hidden=true></i>
+         
+            echo "<td><a href=\"Snapshots/Browse?dir=".$snapdetail["MOUNTPOINT"]."\"><i class=\"icon-u-tab\" title=\""._('Browse')." ".$snapdetail["MOUNTPOINT"]."\"></i></a></td></tr>";
+         }
+      }
+         } else {
+            echo "<tr><td></td><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td><td></td><td></td></tr>" ;
+         }   
+   }
+   #echo "<tr><td>" ;
+   #var_dump($btrfs_paths) ;
+   #echo "</td></tr>" ;
+   
+   break;
 
       case 'run_schedule':
          $subvol = urldecode(($_POST['subvol']));
