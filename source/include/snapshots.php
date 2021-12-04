@@ -51,6 +51,7 @@ $display = $unraid["display"];
 global $btrfs_path, $btrfs_line ;
 #snap_manager_log('snap task'.$_POST['table']) ;
 switch ($_POST['table']) {
+
 // sv = BTRFS Volumes Tab Tables  
 // it = Initiator Tab Tables
 // st = Status Tab Tables
@@ -322,8 +323,8 @@ case 'sv2':
             $path=$subvoldetail["vol"].'/'.$subvolname ;
             echo '<td><input type="checkbox"'.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
 
-            echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></i></a> " ;
-            echo '<input type="checkbox" class="snapshot'.$i++.'"  value="'.$remove.'" </td>'  ;
+            #echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></i></a> " ;
+            echo '<td><input type="checkbox" class="removes snaps".$i++." name="snapshot"  value="'.$remove.'" </td>'  ;
             echo '</td>' ;
             $dftsend = "/mnt/VMs/test" ;
             if ($subvolsendto != _("Undefined")) {
@@ -344,6 +345,21 @@ case 'sv2':
             echo "<tr><td></td><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td><td></td><td></td></tr>" ;
          }   
    }
+   echo '<tr></td><td><br>';       
+   echo '<input id="RmvSnaps" type="submit" disabled value="'._('Remove Selected Entries').'" onclick="removeSnapshot();" '.'>';
+   echo '<span id="warning"></span>';
+   echo '</td></tr>';
+   echo <<<EOT
+<script>
+$("#sv2 input[type='checkbox']").change(function() {
+var matches = document.querySelectorAll("." + this.className);
+for (var i=0, len=matches.length|0; i<len; i=i+1|0) {
+matches[i].checked = this.checked ? true : false;
+}
+$("#RmvSnaps").attr("disabled", false);
+});
+</script>
+EOT;
    #echo "<tr><td>" ;
    #var_dump($btrfs_paths) ;
    #echo "</td></tr>" ;
@@ -601,6 +617,7 @@ case 'sv2':
             echo "<tr><td></td><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td><td></td><td></td></tr>" ;
          }   
    }
+   
    #echo "<tr><td>" ;
    #var_dump($btrfs_paths) ;
    #echo "</td></tr>" ;
@@ -640,6 +657,19 @@ case 'sv2':
             snap_manager_log('btrfs subvolume delete '.$subvol.' '.$error.' '.$result[0]) ;
             echo json_encode(TRUE);
             break;   
+
+            case 'delete_subvolume_list':
+               $snapslist = explode(";" ,urldecode($_POST['snaps']));
+               #snap_manager_log($snapslist) ;
+               foreach ($snapslist as $subvol) {
+                  if ($subvol != "") {
+                  $result=array() ;
+               exec('btrfs subvolume delete '.escapeshellarg($subvol), $result, $error) ;
+               #if
+               snap_manager_log('btrfs subvolume delete '.$subvol.' '.$error.' '.snap_return($result)) ;
+            }}
+               echo json_encode(TRUE);
+               break;      
 
       case 'create_subvolume':
          $subvol = urldecode(($_POST['subvol']));

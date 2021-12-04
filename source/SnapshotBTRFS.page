@@ -212,13 +212,15 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 
 
 function removeSnapshot() {
-  var elements = document.getElementById("snapshot").elements;
-  var string ="/plugins/unraid.iSCSI/include/removeInitMap.php?more=1&INIT=" ;
+  var elements = document.getElementById("SnapBTRFS").elements;
+  var string ="/plugins/snapshots/include/removeSnapshot.php?Snaps=" ;
   for (var i = 0, element; element = elements[i++];) {
-    if (element.type === "checkbox" && element.value !=="" )
-    string = string + element.value +';'+ element.checked +";";
+    if (element.type === "checkbox" && element.value !=="" && element.checked === true)
+	if (element.name === "snapshot") 
+	 string = string + element.value +';';
   }
-  openBox(string,"_(Remove snapshots)_",600,600) ;
+  string = string + "&csrf_token=" + "<?=$var['csrf_token']?>" ;
+  openBox(string,"_(Remove Snapshots)_",600,600) ;
   }
 	
 	function send_inc_snapshot(vol, snap, prev) {
