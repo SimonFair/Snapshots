@@ -266,6 +266,10 @@ _(VM shutdown time-out)_:
    _(Occurences)_:
 : <input type="text" name="occurences" value="<?=$subvolsch['occurences']?>" placeholder="Number of" class="narrow" />
 
+   _(Percentage Used)_:
+: <input type="text" name="volumeusage" value="<?=$subvolsch['volumeusage']?>" placeholder="Percentage Used" class="narrow" />
+
+
 
 _(Remove Snaps/Sends )_:
 : <select name="snapsendopt">

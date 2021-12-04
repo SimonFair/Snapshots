@@ -99,12 +99,14 @@ Shutdown, Suspend, Hibernate.
 */
 $vms=explode(",", $schedule["vmselection"]) ;
 $vms_running = false ;
+var_dump($libvirt_up = $libvirt_running=='yes') ;
 var_dump($vms) ;
+if ($libvirt_up) {
 if ($vms[0] != "") {
 $vm_state=array() ;
 foreach($vms as $vm) {
 	$vm_output=NULL ;
-	exec ('virsh domstate "'.$vm.'"', $vm_output) ;
+	exec ('virsh domstate "'.$vm.'"'." 2>&1", $vm_output) ;
 	if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]);
 	$vm_state[$vm] = $vm_output[0] ;
 }
@@ -117,21 +119,22 @@ foreach($vms as $vm) {
 	$vms_running = true ;
 	switch ($hostoption) {
 		case "shutdown":
-			exec ('virsh shutdown "'.$vm.'"', $vm_output) ;
+			exec ('virsh shutdown "'.$vm.'"'." 2>&1", $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]." Being Shutdown");
 			break ;
 		case "suspend":
-			exec ('virsh suspend "'.$vm.'"', $vm_output) ;
+			exec ('virsh suspend "'.$vm.'"'." 2>&1", $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]." Being Suspended");
 			break ;
 		case "hibernate":
-			exec ('virsh dompmsuspend "'.$vm.'" disk', $vm_output) ;
+			exec ('virsh dompmsuspend "'.$vm.'" disk'." 2>&1", $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]." Being Hibernated");
 			break ;
 		}				
 
 	}
 } 
+}
 /* 
 #root@computenode:/usr/local/emhttp/plugins/snapshots/include# virsh suspend "Windows 11"
 #Domain 'Windows 11' suspended
@@ -157,7 +160,7 @@ for ($wait = 0 ; $wait <= $waitcheck ; $wait++)
 	$vm_stillrunning = false ;
 	foreach($vm_state as $vm=>$state) {
 		$vm_output=NULL ;
-		exec ('virsh domstate "'.$vm.'"', $vm_output) ;
+		exec ('virsh domstate "'.$vm.'"'." 2>&1", $vm_output) ;
 	    if ($vm_output[0]=="running") {$vm_stillrunning = true ; break ; }
 		var_dump($vm, $vm_output[0]) ;
 	}
@@ -196,7 +199,7 @@ $snaps_save=array_reverse($list) ;
 /* Create Snapshot Readonly */
 
 if ($readonly == "true")  $readonly = "-r" ; else $readonly="" ;
-$ymd = date('YmdHi', time());
+$ymd = date('YmdHis', time());
 $snapshoty = str_replace("{YMD}", $ymd, $snapshot);
 
 if ($dummyrun == true)
@@ -204,7 +207,7 @@ if ($dummyrun == true)
 	/* Process with no Actions but write logging.*/
 	if ($logging == "yes")	snap_manager_log('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)) ;
   } else {
-	exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty), $result, $error) ;
+	exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)." 2>&1", $result, $error) ;
 	if ($logging == "yes") snap_manager_log('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)) ;
   }
 
@@ -215,16 +218,16 @@ if ($vms_running) {
 	
 	switch ($hostoption) {
 		case "shutdown":
-			exec ('virsh start "'.$vm.'"', $vm_output) ;
+			exec ('virsh start "'.$vm.'"'." 2>&1", $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Started");
 			break ;
 		case "suspend":
 			if ($vm_state[$vm] == "paused") break ;
-			exec ('virsh resume "'.$vm.'"', $vm_output) ;
+			exec ('virsh resume "'.$vm.'"'." 2>&1", $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Resumed");
 			break ;
 		case "hibernate":
-			exec ('virsh start "'.$vm.'"', $vm_output) ;
+			exec ('virsh start "'.$vm.'"'." 2>&1", $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Woken");
 			break ;
 		}				
@@ -251,8 +254,8 @@ if ($schedule["snapsend"] == "local")
   {
 	  	$result = "" ;
 		if ($schedule["snapincremental"] == "yes") $inc_cmd = "-p ".$get_previous." " ; else $inc_cmd = "" ; 
-		exec('btrfs send '.$inc_cmd.$snapshoty.' | btrfs receive '.$sendshot , $result, $error) ;
-		snap_manager_log('btrfs snapshot send '.$inc_cmd.$snapshoty.' To '.$sendshot.' '.$error.' '.$result[0]) ;
+		exec('btrfs send '.$inc_cmd.$snapshoty.' | btrfs receive '.$sendshot." 2>&1" , $result, $error) ;
+		snap_manager_log('btrfs snapshot send '.$inc_cmd.$snapshoty.' To '.$sendshot.' '.snap_error($error).' '.snap_return($result)) ;
   }
 
 
@@ -262,10 +265,12 @@ if ($schedule["snapsend"] == "local")
 if ($schedule["snapsend"] == "remote") 
 {
 		$host = $schedule["remotehost"] ;
-		$result = "" ;
+		$result = array() ;
 		if ($schedule["snapincremental"] == "yes") $inc_cmd = "-p ".$get_previous." " ; else $inc_cmd = "" ; 
-	  exec('btrfs send '.$inc_cmd.$snapshoty.' | ssh root@'.$host.' "btrfs receive '.$sendshot.'"' , $result, $error) ;
-	  snap_manager_log('btrfs snapshot send remote '.$inc_cmd.$snapshoty.' To root@'.$host.' ' .$sendshot.' '.$error.' '.$result[0]) ;
+	  exec('btrfs send '.$inc_cmd.$snapshoty.' | ssh root@'.$host.' "btrfs receive '.$sendshot.'" 2>&1' , $result, $error) ;
+	 # var_dump($error , $result) ;
+	  snap_manager_log('btrfs snapshot send remote '.$inc_cmd.$snapshoty.' To root@'.$host.' ' .$sendshot.' '.snap_error($error).' '.snap_return($result)) ;
+
 }  
 
 
@@ -283,7 +288,7 @@ $list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
 #var_dump($list) ;
 $snaps=array_reverse($list) ;
 #var_dump($snaps) ;
-if ($logging == "yes") snap_manager_log('Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"]) ;
+if ($logging == "yes") snap_manager_log('Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"].' Percentage:'.$schedule["volumeusage"]) ;
 
 
 
@@ -300,7 +305,7 @@ if ($schedule["days"] > 0) {
 			/* Process with no Actions but write logging.*/
 			if ($logging == "yes") snap_manager_log('Dry Run Delete by date '.$path) ;
   		} else {
-			exec('btrfs subvolume delete '.escapeshellarg($path), $result, $error) ;
+			exec('btrfs subvolume delete '.escapeshellarg($path)." 2>&1", $result, $error) ;
 			if ($logging == "yes") snap_manager_log('Deleted Snapshot by date: '.$path) ;
   		}
 	}
@@ -320,10 +325,101 @@ if ($schedule["occurences"] > 0)
 			/* Process with no Actions but write logging.*/
 			if ($logging == "yes") snap_manager_log('Dry Run Delete by occurence'.$path) ;
   		} else {
-			exec('btrfs subvolume delete '.escapeshellarg($path), $result, $error) ;
+			exec('btrfs subvolume delete '.escapeshellarg($path)." 2>&1", $result, $error) ;
 			if ($logging == "yes") snap_manager_log('Deleted Snapshot by occurence: '.$path) ;
   		}
 		  $count++ ;
+	}
+}
+
+/*
+
+#!/bin/bash
+
+#define max used percentage
+u=80
+
+#pools to monitor
+v=$(df | grep cachebackups | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//')
+t=$(df | grep tempbackups | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//')
+n=$(df | grep evoraid | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//')
+
+#cleanup cachebackups
+if [ "$v" -lt "$u" ]
+   then
+      echo "move along nothing to see here, current VMs/vdisk2 backup pool usage is at ${v}%"
+   else
+      cd /mnt/cachebackups/snaps
+      vd=$(echo vdisk2_d* | awk '{print $1}')
+      vl=$(echo vdisk2_d* | awk '{print $(NF-1)}')
+      if [ "$vd" == "$vl" ]
+           then echo "only a couple of snapshots left"
+      else
+          btrfs sub del $vd
+      fi
+      vm=$(echo VMs_d* | awk '{print $1}')
+      vn=$(echo VMs_d* | awk '{print $(NF-1)}')
+      vo=$(echo $vm | cut -c1-2,4-25)
+      if [ "$vm" == "$vn" ]
+           then echo "only a couple of snapshots left"
+      else
+          btrfs sub del $vm
+          btrfs sub del $vo
+      fi
+fi
+
+#cleanup tempbackups
+if [ "$t" -lt "$u" ]
+   then
+      echo "move along nothing to see here, current Temp backup pool usage is at ${t}%"
+   else
+      cd /mnt/tempbackups/snaps
+      te=$(echo Temp_* | awk '{print $1}')
+      btrfs sub del $te
+fi
+
+#cleanup evoraid
+if [ "$n" -lt "$u" ]
+   then
+      echo "move along nothing to see here, current evoraid backup pool usage is at ${n}%"
+   else
+      cd /mnt/evoraid/snaps
+      nv=$(echo win10b_* | awk '{print $1}')
+      btrfs sub del /mnt/evoraid/snaps/$nv
+fi
+*/ 
+
+if ($schedule["volumeusage"] > 0)
+	{
+
+	$dryrunsize =0;
+	
+	$freespace = disk_free_space($parent) ;
+	$totalspace = disk_total_space($parent) ;
+	$usedspace =  $spacepostdelete = ($totalspace - $freespace);
+	
+  	foreach($snaps as $path=>$snap) {
+		$percent = "" ;
+		$totalspace = disk_total_space($parent) ;
+		if ($schedule["Removal"] == "dry")
+		{
+			$percent = round(($spacepostdelete / $totalspace * 100) , 2) ;
+		}
+		else {	exec("df | grep $parent | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//'",$percent)  ;	 }
+
+		#var_dump($spacepostdelete, $percent, $schedule["volumeusage"]) ;
+		if ($percent < $schedule["volumeusage"] )  break ;
+        $path = $parent.$path ;
+		if ($schedule["Removal"] == "dry")
+  		{
+			$file_removed=filesize($path) ;
+			/* Process with no Actions but write logging.*/
+			if ($logging == "yes") snap_manager_log('Dry Run Delete by usage'.$path." Volume %:".$percent) ;
+			$spacepostdelete -= $file_removed ;
+  		} else {
+			#exec('btrfs subvolume delete '.escapeshellarg($path)." 2>&1", $result, $error) ;
+			if ($logging == "yes") snap_manager_log('Deleted Snapshot by usage: '.$path." Volume %:".$percent) ;
+  		}
 	}
 }
 }

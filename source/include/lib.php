@@ -80,6 +80,19 @@ function save_json_file($file, $array) {
 	}
 }
 
+function snap_return($return) {
+	$return_value="" ;
+	foreach($return as $line) {
+		$return_value.=" ".$line ;
+	}
+	return($return_value) ;
+}
+
+function snap_error($error) {
+	if ($error) return "Error" ; else return("OK") ;
+}
+
+
 #########################################################
 ############        CONFIG FUNCTIONS        #############
 #########################################################
@@ -411,7 +424,7 @@ function build_list($lines) {
 
 			# Get ro status
 			$ro=null ;
-			exec('btrfs property get  '.$line.'/'.$arrMatch["path"],$ro);
+			exec('btrfs property get  "'.$line.'/'.$arrMatch["path"].'"',$ro);
 			foreach ($ro as $roline) {
 			$rosplit=explode("=", $roline)	 ;
 			$btrfs_list[$line][$arrMatch["path"]]["property"][$rosplit[0]] = $rosplit[1] ;
@@ -451,7 +464,7 @@ function build_list($lines) {
 
 			# Get ro status
 			$ro=null ;
-			exec('btrfs property get  '.$line.'/'.$arrMatch["path"],$ro);
+			exec('btrfs property get  "'.$line.'/'.$arrMatch["path"].'"',$ro);
 			foreach ($ro as $roline) {
 			$rosplit=explode("=", $roline)	 ;
 			$btrfs_list[$line][$arrMatch["path"]]["property"][$rosplit[0]] = $rosplit[1] ;
@@ -541,7 +554,7 @@ function process_subvolumes($btrfs_list,$line, $uuid){
 
 			# Get ro status
 			$ro=null ;
-			exec('btrfs property get  '.$line.'/'.$arrMatch["path"],$ro);
+			exec('btrfs property get  "'.$line.'/'.$arrMatch["path"].'"',$ro);
 				foreach ($ro as $roline) {
 					$rosplit=explode("=", $roline)	 ;
 					$btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]]["property"][$rosplit[0]] = $rosplit[1] ;
@@ -646,7 +659,7 @@ function build_list3($lines) {
 
 					# Get ro status
 					$ro=null ;
-					exec('btrfs property get  '.$path,$ro);
+					exec('btrfs property get  "'.$path.'"',$ro);
 					foreach ($ro as $roline) {
 						$rosplit=explode("=", $roline)	 ;
 						$btrfs_list[$line][$path]["property"][$rosplit[0]] = $rosplit[1] ;
@@ -710,7 +723,7 @@ function process_subvolumes3($btrfs_list,$line, $uuid){
 	
 				# Get ro status
 				$ro=null ;
-				exec('btrfs property get  '.$line.'/'.$arrMatch["path"],$ro);
+				exec('btrfs property get  "'.$line.'/'.$arrMatch["path"].'"',$ro);
 					foreach ($ro as $roline) {
 						$rosplit=explode("=", $roline)	 ;
 						$btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]]["property"][$rosplit[0]] = $rosplit[1] ;

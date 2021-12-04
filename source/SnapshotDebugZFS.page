@@ -1,7 +1,7 @@
 Menu="Snapshots"
 Title="Debug ZFS"
 icon="fa-file"
-
+Cond="shell_exec('which zfs | grep zfs')"
 ---
 <?PHP
 /* Copyright 2020-2020, Simon Fairweather

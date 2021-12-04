@@ -151,6 +151,7 @@ case 'sv2':
    echo "</tr></thead>";
    echo "<tbody><tr>";
    exec(' df -t btrfs --output="target" ',$targetcli);
+   $i=1 ;
    $list=build_list3($targetcli) ;
    # echo "<tr><td>" ;var_dump( $btrfs_volumes) ;echo "</td></tr>" ;
 
@@ -161,7 +162,7 @@ case 'sv2':
    foreach ($list as $key=>$vline) {
       #echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$vline["vol"]["vol"].'/')."</td>tr>";
       echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><td></td></td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
-      $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
+      $ct = "<td title='"._("Remove Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
       if ($vline != NULL) {
          foreach ($vline as $snapkey=>$snapdetail) {
          # echo "<tr><td>".preg_replace('/\]  +/',']</td><td>',$vline)."</td></tr>";
@@ -302,7 +303,7 @@ case 'sv2':
       }
       echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
       
-         
+        
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
             if ($subvoldetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
             #(! $disk['show_partitions']) || $disk['partitions'][0]['pass_through'] ? $style = "style='display:none;'" : $style = "";
@@ -321,7 +322,8 @@ case 'sv2':
             $path=$subvoldetail["vol"].'/'.$subvolname ;
             echo '<td><input type="checkbox"'.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
 
-            echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
+            echo "<td title='"._("Delete Snapshot")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_snapshot(\"{$remove}\")'><i class='fa fa-remove hdd'></i></a> " ;
+            echo '<input type="checkbox" class="snapshot'.$i++.'"  value="'.$remove.'" </td>'  ;
             echo '</td>' ;
             $dftsend = "/mnt/VMs/test" ;
             if ($subvolsendto != _("Undefined")) {

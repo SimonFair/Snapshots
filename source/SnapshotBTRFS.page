@@ -210,39 +210,16 @@ $('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});
 	}
 
 
-	function usbip_attach(el, op, device) {
-		/* add spinning and disable button */
 
-		
-		$("button[hostport='"+device+"']").html("<i class='fa fa-circle-o-notch fa-spin'></i> "+(op == "attach" ? "<?=_('Attaching');?>" : "<?=_('Unbinding');?>"));
-		$("button[hostport='"+device+"']").prop("disabled","true"); 
-
-		$.post(SNAPURL,{'action':op,'hostport':device}).done(function(data)
-		{
-
-		/* $("button[device='"+device+"']").html(" "+(op == "bind" ? "<?=_('Unbind');?>" : "<?=_('attach');?>"));*/
-		
-		usb_disks(tab_usbdisks) ;
-		});
-	}
-
-
-	function usbip_detach(el, op, port) {
-		/* add spinning and disable button */
-
-		
-		$("button[port='"+port+"']").html("<i class='fa fa-circle-o-notch fa-spin'></i> "+(op == "detach" ? "<?=_('Detaching');?>" : "<?=_('Unbinding');?>"));
-		$("button[port='"+port+"']").prop("disabled","true"); 
-
-		$.post(SNAPURL,{'action':op,'port':port}).done(function(data)
-		{
-
-		/* $("button[port='"+port+"']").html(" "+(op == "detach" ? "<?=_('Unbind');?>" : "<?=_('Bind');?>"));*/
-		
-		usb_disks(tab_usbdisks) ;
-		});
-	}
-
+function removeSnapshot() {
+  var elements = document.getElementById("snapshot").elements;
+  var string ="/plugins/unraid.iSCSI/include/removeInitMap.php?more=1&INIT=" ;
+  for (var i = 0, element; element = elements[i++];) {
+    if (element.type === "checkbox" && element.value !=="" )
+    string = string + element.value +';'+ element.checked +";";
+  }
+  openBox(string,"_(Remove snapshots)_",600,600) ;
+  }
 	
 	function send_inc_snapshot(vol, snap, prev) {
 		/* add spinning and disable button */
