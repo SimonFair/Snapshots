@@ -394,31 +394,41 @@ if ($schedule["volumeusage"] > 0)
 
 	$dryrunsize =0;
 	
-	$freespace = disk_free_space($parent) ;
-	$totalspace = disk_total_space($parent) ;
+	$freespace = disk_free_space($parents[$subvol]["vol"]) ;
+	$totalspace = disk_total_space($parents[$subvol]["vol"]) ;
 	$usedspace =  $spacepostdelete = ($totalspace - $freespace);
 	
   	foreach($snaps as $path=>$snap) {
 		$percent = "" ;
-		$totalspace = disk_total_space($parent) ;
+		$totalspace = disk_total_space($parents[$subvol]["vol"]) ;
 		if ($schedule["Removal"] == "dry")
 		{
-			$percent = round(($spacepostdelete / $totalspace * 100) , 2) ;
+			$percent = round(($spacepostdelete / $totalspace * 100) , 0) ;
 		}
-		else {	exec("df | grep $parent | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//'",$percent)  ;	 }
+		else {
+			$percentdf =array() ;
+			#shell_exec("df | grep /mnt/cache | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//'",$percentdf,$error)  ;	
+			exec("df | grep ".$parents[$subvol]["vol"]." | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//'"  ,$percentdfv,$error)  ;	 
+			
+			$freespace = disk_free_space($parents[$subvol]["vol"]) ;
+			$usedspace = ($totalspace - $freespace);
+			$percent = round(($usedspace / $totalspace * 100) , 0) ;
+			$percentdf=$percentdfv[0] ;
+			var_dump($percent, $percentdf) ;
+		}
 
-		#var_dump($spacepostdelete, $percent, $schedule["volumeusage"]) ;
+		var_dump($spacepostdelete, $percent, $percentdf, $schedule["volumeusage"]) ;
 		if ($percent < $schedule["volumeusage"] )  break ;
         $path = $parent.$path ;
 		if ($schedule["Removal"] == "dry")
   		{
 			$file_removed=filesize($path) ;
 			/* Process with no Actions but write logging.*/
-			if ($logging == "yes") snap_manager_log('Dry Run Delete by usage'.$path." Volume %:".$percent) ;
+			if ($logging == "yes") snap_manager_log('Dry Run Delete by usage'.$path." Actual %:".$percent) ;
 			$spacepostdelete -= $file_removed ;
   		} else {
 			#exec('btrfs subvolume delete '.escapeshellarg($path)." 2>&1", $result, $error) ;
-			if ($logging == "yes") snap_manager_log('Deleted Snapshot by usage: '.$path." Volume %:".$percent) ;
+			if ($logging == "yes") snap_manager_log('Deleted Snapshot by usage: '.$path." Actual %:".$percent." df %: ".$percentdf) ;
   		}
 	}
 }
