@@ -68,6 +68,7 @@ $slot= $arg2 ;
 
 #$schedule = get_subvol_schedule($subvol) ;
 $schedule = get_subvol_schedule_json($subvol,$slot) ;
+$tag=$schedule["tag"] ;
 
 $logging = $schedule['snaplogging'] ;
 
@@ -199,8 +200,14 @@ $snaps_save=array_reverse($list) ;
 /* Create Snapshot Readonly */
 
 if ($readonly == "true")  $readonly = "-r" ; else $readonly="" ;
-$ymd = date('YmdHis', time());
-$snapshoty = str_replace("{YMD}", $ymd, $snapshot);
+
+$DateTimeF = findText("{", "}", $snapshot) ;
+if ($DateTimeF == "YMD") $DateTime = "YmdHis" ; else $DateTime = $DateTimeF ;
+var_dump($DateTime) ;
+$ymd = date($DateTime, time());
+$snapshoty = str_replace("{".$DateTimeF."}", $ymd, $snapshot);
+
+if ($tag != "") { $snapshoty .= ".".$tag ;}  
 
 if ($dummyrun == true)
   {
@@ -286,9 +293,13 @@ $list = build_list3($df) ;
 #var_dump($df) ;
 $list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
 #var_dump($list) ;
-$snaps=array_reverse($list) ;
+if ($tag != "") {
+echo "Removing Tags" ;
+$snaps=remove_tags($list, $tag) ;
+} else $snaps = $list ;
+$snaps=array_reverse($snaps) ;
 #var_dump($snaps) ;
-if ($logging == "yes") snap_manager_log('Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"].' Percentage:'.$schedule["volumeusage"]) ;
+if ($logging == "yes") snap_manager_log('Tag: .'.$tag." Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"].' Percentage:'.$schedule["volumeusage"]) ;
 
 
 

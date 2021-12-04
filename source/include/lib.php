@@ -92,6 +92,23 @@ function snap_error($error) {
 	if ($error) return "Error" ; else return("OK") ;
 }
 
+function findText($start_limiter,$end_limiter,$haystack)
+{
+   $start_pos = strpos($haystack,$start_limiter);
+   if ($start_pos === FALSE)
+   {
+       return FALSE;
+   }
+
+   $end_pos = strpos($haystack,$end_limiter,$start_pos);
+
+   if ($end_pos === FALSE)
+   {
+      return FALSE;
+   }
+
+   return substr($haystack, $start_pos+1, ($end_pos-1)-$start_pos);
+} 
 
 #########################################################
 ############        CONFIG FUNCTIONS        #############
@@ -940,4 +957,19 @@ $output = preg_replace('/\s+/', ' ', $targetcli);
 
 
 
+}
+
+function remove_tags($snaps, $tag="")
+{
+	foreach($snaps as $key=>$snap) {
+		
+		#var_dump($snap) ;
+		$parts = explode('.', $key);
+		if (count($parts) < 2)  {unset($snaps[$key]) ;continue ; }
+		$last = array_pop($parts);
+		if ($tag != $last) {unset($snaps[$key]) ; continue ;}
+		var_dump($last, $key) ;
+
+	}
+	return $snaps ;
 }

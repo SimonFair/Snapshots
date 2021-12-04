@@ -192,8 +192,18 @@ _(Snap Schedule logging)_:
   <?=mk_option($subvolsch['snaplogging'], "yes", _("Enabled"))?>
   <?=mk_option($subvolsch['snaplogging'], "no", _("Disabled"))?>
   </select>
+  
 
 :snap_logging_help:
+
+_(Snap Schedule Tag)_:
+
+: <input type="text" name="tag"  value="<?=$subvolsch['tag']?>" placeholder="tag name" class="narrow"/>_(Function not implemented.)_
+  
+
+:snap_logging_help:
+
+
 
 _(Snap Send )_:
 : <select name="snapsend">
