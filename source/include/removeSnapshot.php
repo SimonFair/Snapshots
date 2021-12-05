@@ -57,8 +57,7 @@ div.closed{display:none}
 </div>
 <?
 
-   # $json=get_iscsi_json() ;
-   # $nodes=build_iscsi_initiators($json) ;
+
     $new = $_GET["Snaps"] ;
     $csrf_token = $_GET["csrf_token"] ;
     $newe=$x=explode(";", $new) ;

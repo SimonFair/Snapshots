@@ -77,7 +77,7 @@ table.snapshot tr td:empty {  width: 50px; }
 
 $(function(){
 $('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2'});  
-$('#sv1').load('/plugins/snapshots/include/snapshots.php',{table:'sv1'});  
+ 
 
 
 
@@ -223,11 +223,17 @@ function removeSnapshot() {
   openBox(string,"_(Remove Snapshots)_",600,600) ;
   }
 	
-	function send_inc_snapshot(vol, snap, prev) {
+	function send_inc_snapshot(snap, send, path, vol) {
 		/* add spinning and disable button */
-
-		prev = "Test setup" ;
-		send_winc_snapshot(vol, snap, prev) ;
+		$.post(SNAPURL,{table:"get_previous",current:snap,path:path,vol:vol},function(data)
+		{
+			if (data) {
+				prev=data ;
+			}
+			send_winc_snapshot(snap, send, prev) ;
+		}	);
+		
+		
 	}
 
 
@@ -287,40 +293,6 @@ function removeSnapshot() {
 		setTimeout(refresh_page, 5000, tabnum);
 	}
 
-	function detect_usb_disk_change(tabnum) {
-		if ($('#tab'+tabnum).is(':checked')) {
-			clearTimeout(timers.usbdisks);
-			if ( $("tr.toggle-port").find("input[name='portkey']:visible").length )
-			{
-				timers.usbdisks=setTimeout('detect_usb_disk_change('+tabnum+')',500);
-				return false;
-			}
-			$.post(SNAPURL,{action:"detect"},function(data)
-			{
-				do_reload = false;
-				if (diskinfo && diskinfo !== data.diskinfo)
-				{
-					do_reload = true;
-				}
-				if(data.reload)
-				{
-					do_reload = true;
-					$.post(SNAPURL,{action:"remove_hook"});
-				}
-				diskinfo = data.diskinfo;
-				if (do_reload)
-				{
-					usb_disks(tabnum);
-				}
-			},"json").always(function()
-			{
-				timers.usbdisks=setTimeout('detect_usb_disk_change('+tabnum+')',500000);
-			});
-		} else {
-			clearTimeout(timers.usbdisks);
-		}
-		return false;
-	}
 
 	function showInput() {
 		$(this).off('click');
@@ -335,63 +307,6 @@ function removeSnapshot() {
 		$(this).siblings('span').click(showInput);
 	}
 
-
-	function load_hosts(el, action) {
-		var target = $(el).parents("div").find("*[name='IP']");
-		var old = $(el).html();
-		$(el).html("<i class='fa fa-circle-o-notch fa-spin'></i> <?=_('Searching');?>");
-		$.post(SNAPURL,{'action': action, 'var': vars, 'network': network, 'workgroup': workgroup}).done(function(data)
-		{
-			$(el).html(old);
-			if (data) {
-				var hosts = data.split('\n');
-				if (hosts.length) {
-					var add = "<select name='IP' class='swal-content__input' required>";
-					for(var i = 0;i < hosts.length;i++)
-					{
-						if (hosts[i].length)
-						{
-							add += "<option value='"+hosts[i].trim()+"'>"+hosts[i].trim()+"</option>";
-						}
-					}
-					target.replaceWith(add+"</select>")
-				} else {
-					target.replaceWith("<input type='text' name='IP' class='swal-content__input' autocomplete='off'>");
-				}
-			}
-		});
-	}
-
-	function load_shares(el, ip, user, pass, action) {
-		var old = $(el).html();
-		var target = $(el).parents("div").find("*[name='SHARE']");
-		$(el).html("<i class='fa fa-circle-o-notch fa-spin'></i> <?=_('Loading');?>");
-		var opts = new Object();
-		opts["action"] = action;
-		opts["IP"] = ip;
-		opts["USER"] = user;
-		opts["PASS"] = pass;
-		$.post(SNAPURL,opts).done(function(data)
-		{
-			$(el).html(old);
-			if (data != "") {
-				var shares = data.split('\n');
-				if (shares.length) {
-					var add = "<select name='SHARE' class='swal-content__input' required>";
-					for(var i = 0;i < shares.length;i++) {
-						if (shares[i].length) {
-							add += "<option value='"+shares[i]+"'>"+shares[i]+"</option>";
-						}
-					}
-					target.replaceWith(add+"</select>");
-				} else {
-					target.replaceWith("<input type='text' name='SHARE' class='swal-content__input' autocomplete='off' required>");
-				}
-			} else {
-				target.replaceWith("<input type='text' name='SHARE' class='swal-content__input' autocomplete='off' required>");
-			}
-		});
-	}
 
 	function getVal(el, name) {
 		el = $(el).find("*[name="+name+"]");
@@ -760,7 +675,7 @@ _(Snapshots BTRFS)_
 		<p><?=_('Send Incremental');?>:&nbsp;<input name ="incremental" type="checkbox" checked="true" value="true"> 
 			<input type="text" class="swal-content__input" name="sendsnapprev"  placeholder="<?=_('Initial Snapshot');?>" value="{Previous}" >
 			<input type='text' name='prevsnap' placeholder="<?=_('Click to select Snapshot');?>" data-pickcloseonfile='true'  {2}='/mnt/user/isos/' data-pickfolders='true' required='required' class='swal-content__input' autocomplete="off" > 
-			<p><?=_('Snapshot Name');?>:&nbsp;{0}</p>
+			<p><?=_('Snapshot Name');?>{0}</p>
 			<p><?=_('Previous Snapshot:');?>{2}</p>
 			
 		</div>
@@ -866,7 +781,7 @@ _(Snapshots BTRFS)_
 
 
 <div style="display: none;">
-	<table class='sv1s wide usb_disks'>
+	<table class='sv2s wide usb_disks'>
 		<tbody id="spinner">
 		</tbody>
 	</table>

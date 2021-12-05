@@ -183,7 +183,7 @@ _(Days to run for Hourly and Daily)_:
 ?>
   <?=mk_option($subvolsch['rund'], "*", "--------", "disabled")?>
   </select>
-  &nbsp;_( Function implemented no error checking.)_  
+  
 
 :snap_excluded_days_help:
 
@@ -196,40 +196,51 @@ _(Snap Schedule logging)_:
 
 :snap_logging_help:
 
+> Switch on and off detailed logging to the Syslog, Start and end processing of the snapping process will be logged when set to no.
+
 _(Snap Schedule Tag)_:
 
-: <input type="text" name="tag"  value="<?=$subvolsch['tag']?>" placeholder="tag name" class="narrow"/>_(Function not implemented.)_
+: <input type="text" name="tag"  value="<?=$subvolsch['tag']?>" placeholder="tag name" class="narrow"/>
   
+:snap_tag_help:
 
-:snap_logging_help:
-
-
+> Tags allow schedules to be tagged, so only removal actions affect the tag. Without tags deleteoptions cover all snapshots for this subvolume. For a Weekly Schedule you may want to keep 4 occurences, for Daly 7 etc.
 
 _(Snap Send )_:
 : <select name="snapsend">
   <?=mk_option($subvolsch['snapsend'], "no", _("Disabled"))?>
   <?=mk_option($subvolsch['snapsend'], "local", _("Local"))?>
-  
   <?=mk_option($subvolsch['snapsend'], "remote", _("Remote"))?>
+  <?=mk_option($subvolsch['snapsend'], "both", _("Both"))?>
   </select>
- &nbsp;_( Function not implemented.)_
+ 
+:snap_send_help:
 
+> This option defines if snapshots are sent to either another disk, filesystem or a remote machine. The remote location has to be a different BTRFS instance.
 
  _(Remote Host)_:
-: <input type="text" name="remotehost"  value="<?=$subvolsch['remotehost']?>" placeholder="Remote host ip/name" class="narrow"/>_(Function not implemented.)_
+: <input type="text" name="remotehost"  value="<?=$subvolsch['remotehost']?>" placeholder="Remote host ip/name" class="narrow"/>
+
+:snap_send_remotehost_help:
+
+> This sets the name or IP address of the remote host.
 
   _(Snap Send Incremental)_:
 : <select name="snapincremental">
   <?=mk_option($subvolsch['snapincremental'], "yes", _("Yes"))?>
   <?=mk_option($subvolsch['snapincremental'], "no", _("No"))?>
   </select>
-&nbsp;_( Function not implemented.)_
 
- 
+:snap_send_incremental_help:
+
+> Sends only a incremental file based on the master snap defined.
+
  _(Master Snap)_:
-: <input type="text" name="mastersnap"  value="<?=$subvolsch['mastersnap']?>" placeholder="Previous" class="narrow"/>_(Function not implemented.)_
+: <input type="text" name="mastersnap"  value="<?=$subvolsch['mastersnap']?>" placeholder="Previous" class="narrow"/>
 
+:snap_send_master_help:
 
+> Defined the master SNAP, if left to previous will take the last back as the master. This must exist on the remote end.
 
  Virtual Machine
 :   <select id="vmselection" class="input.description" name="vmselection[]" multiple="multiple" style="display">
@@ -245,6 +256,9 @@ _(Snap Send )_:
 ?>
 </select> 
 
+:snap_vms_help:
+
+> Selected VMs to action at start and end of snapping.
 
 _(VM options)_:
 
@@ -254,13 +268,16 @@ _(VM options)_:
   <?=mk_option($subvolsch['hostoption'], 'suspend', _('Suspend VMs'))?>
   </select>
 
-
 :vms_host_shutdown_help:
+
+> Selected action to be taken on running VMs during the snapping process.
 
 _(VM shutdown time-out)_:
 : <input type="number" id="vm_shutdown_timeout" name="shutdowntimeout" value="<?=htmlspecialchars($subvolsch["shutdowntimeout"])?>" class="narrow">
 
 :vms_shutdown_timeout_help:
+
+> Time the process will wait for the VMs to complete action before progressing. If VMs reach expected state before the timeout processing will continue.
 
  _(Retention )_:
 
@@ -270,16 +287,31 @@ _(VM shutdown time-out)_:
   <?=mk_option($subvolsch['Removal'], "yes", _("Enabled"))?>
   </select>
 
+:snap_retention_help:
+
+> Sets the mode for retention processing. Dry Run will provide information in the syslog of files that would have been processed. Enabled needs to be set to snapshots to be removed.
+> Each of the checks below are processed in order: Days, Occurences and the Percentage. If tag is set will only remove snapshots for that tag.
+
    _(Days)_:
 : <input type="text" name="days"  value="<?=$subvolsch['days']?>" placeholder="Days" class="narrow" />
+
+:snap_retention_days_help:
+
+> Specify the number of days of snapshots to keep.
 
    _(Occurences)_:
 : <input type="text" name="occurences" value="<?=$subvolsch['occurences']?>" placeholder="Number of" class="narrow" />
 
+:snap_retention_occurences_help:
+
+> Specify the number of occurences of snapshots to keep.
+
    _(Percentage Used)_:
 : <input type="text" name="volumeusage" value="<?=$subvolsch['volumeusage']?>" placeholder="Percentage Used" class="narrow" />
 
+:snap_retention_Percentage_help:
 
+> Specify the percentage of the volume, snapshots will be removed until the drive is below the percentage defined.
 
 _(Remove Snaps/Sends )_:
 : <select name="snapsendopt">
@@ -294,9 +326,16 @@ _(Remove Snaps/Sends )_:
  _(Snapshot Prefix)_:
 : <input type="text" name="subvolprefix"  value="<?=$subvolsch['subvolprefix']?>" placeholder="Default" class="narrow"/>
 
+:snap_prefix_help:
+
+> Allows override of subvolume prefix.
+
  _(Send to location)_:
 : <input type="text" name="subvolsendto"  value="<?=$subvolsch['subvolsendto']?>" placeholder="Default" class="narrow"/>
 
+:snap_prefix_help:
+
+> Allows override of subvolume send location.
 
 <?endif;?>
 &nbsp;
