@@ -1,6 +1,6 @@
 Menu="Snapshots"
 Title="BTRFS Volumes"
-icon="fa-file"
+icon="fa-clone"
 ---
 <?PHP
 /* Copyright 2020-2020, Simon Fairweather

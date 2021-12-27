@@ -64,6 +64,7 @@ case 'sv2':
 
    foreach ($list as $key=>$vline) {
       #echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$vline["vol"]["vol"].'/')."</td>tr>";
+      ksort($vline) ;
       echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><td></td></td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
       $ct = "<td title='"._("Remove Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
       if ($vline != NULL) {
@@ -198,7 +199,7 @@ case 'sv2':
       } else {
       $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
       }
-      echo "<tr><td>\t".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      echo "<tr><td>\t  ".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
       
         
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -243,10 +244,10 @@ case 'sv2':
             echo "<tr><td></td><td></td><td></td><td>"._("No Subvolumes defined")."</td><td></td><td></td><td></td><td></td><td></td></tr>" ;
          }   
    }
-   echo '<tr></td><td><br>';       
+   echo '<tr><td><br>';       
    echo '<input id="RmvSnaps" type="submit" disabled value="'._('Remove Selected Entries').'" onclick="removeSnapshot();" '.'>';
    echo '<span id="warning"></span>';
-   echo '</td></tr>';
+   echo '</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></td><td></td></tr>';
    echo <<<EOT
 <script>
 $("#sv2 input[type='checkbox']").change(function() {

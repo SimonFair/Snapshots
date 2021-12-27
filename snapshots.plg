@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.12.05">
+<!ENTITY version   "2021.12.27">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"a5ef0359b38cb64c63ccf52e9025f116">
+<!ENTITY md5		"bbdfb2907973d5b5d2b84f30bfc51f05">
 ]>
 
 <PLUGIN name="&name;"
@@ -18,18 +18,25 @@
 		version="&version;"
 		pluginURL="&pluginURL;"
 		support="&supportURL;"
-		icon="fa-usb"
+		icon="fa-clone"
 		min="6.8.0">
 
 <CHANGES>
 ##Snapshots
 ###&version;
 
-  - Initial Dev Release.
+  - Initial Beta Release.
 
 </CHANGES>
 
 <FILE Name="/boot/config/plugins/&name;/subvol.cfg">
+<INLINE>
+<![CDATA[
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/boot/config/plugins/&name;/subvolsch.cfg">
 <INLINE>
 <![CDATA[
 ]]>

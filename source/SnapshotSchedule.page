@@ -72,6 +72,28 @@ if (!isset($subvolsch['snapscheduleenabled'])) { $subvolsch['snapscheduleenabled
 $setup=true ;
 ?>
 
+<script src="<?autov("/webGui/javascript/jquery.filetree.js")?>"></script>
+
+<script>
+$(function(){
+  $("#subvolprefix").fileTreeAttach();
+  $("#subvolsendto").fileTreeAttach();
+});
+
+function path_selected() {
+  var share = $("#subvolprefix").val();
+  document.getElementById("subvolprefix").value = share;
+}
+function path_selected2() {
+  var share2 = $("#subvolsendto").val();
+  document.getElementById("subvolsendto").value = share2;
+}
+
+
+
+</script>
+
+
 
 
 <script>
@@ -118,6 +140,10 @@ _(Snap schedule)_:
   <?=mk_option($subvolsch['snapscheduleenabled'], "no", _("Disabled"))?>
   </select>
 
+:snap_enabled_help:
+
+> Enable or Disable schedule running
+
 <?if ($setup):?>
 _(Snap schedule mode)_:
 : <select name="snapSchedule" onchange="presetsnap(this.form)">
@@ -127,6 +153,8 @@ _(Snap schedule mode)_:
   </select>
 
 :snap_schedule_help:
+
+> Type of schedule.
 
 _(Day of the week)_:
 : <select name="day">
@@ -138,6 +166,8 @@ _(Day of the week)_:
 
 :snap_day_of_the_week_help:
 
+> Day to run on a weekly schedule.
+
 _(Day of the month)_:
 : <select name="dotm">
   <?for ($d=1; $d<=31; $d++):?>
@@ -147,6 +177,8 @@ _(Day of the month)_:
   </select>
 
 :snap_day_of_the_month_help:
+
+> Day to run on a monthly schedule.
 
 _(Time of the day)_:
 : <span id="H1"<?if ($move==0):?> style="display:none"<?endif;?>><select name="hour1" class="narrow">
@@ -170,6 +202,8 @@ _(Time of the day)_:
 
 :snap_time_of_the_day_help:
 
+> Time of day to run for Daily.Weekly and Monthly Schedules.
+
 _(Days to run for Hourly and Daily)_:
 : <select name="rund[]" id="rund" class="input.description" multiple="multiple" size=10 style="display">
  <?php
@@ -186,6 +220,8 @@ _(Days to run for Hourly and Daily)_:
   
 
 :snap_excluded_days_help:
+
+> For Hourly and Daily schedules to can specify days of the week to run. i.e. Run Daily Mon-Sat and on a Weekly on Sun.
 
 _(Snap Schedule logging)_:
 : <select name="snaplogging">
@@ -322,6 +358,10 @@ _(Remove Snaps/Sends )_:
   <?=mk_option($subvolsch['snapsendopt'], "remote", _("Remote"))?>
   </select>
 &nbsp;_( Function not implemented.)_
+
+:snap_prefix_help:
+
+> Enables remove of sent snapshots to local and remote systems using retention values.
 
  _(Snapshot Prefix)_:
 : <input type="text" name="subvolprefix"  value="<?=$subvolsch['subvolprefix']?>" placeholder="Default" class="narrow"/>

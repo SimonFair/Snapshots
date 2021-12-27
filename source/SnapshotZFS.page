@@ -1,6 +1,6 @@
 Menu="Snapshots"
 Title="ZFS Volumes"
-icon="fa-file"
+icon="fa-clone"
 Cond="shell_exec('which zfs | grep zfs')"
 ---
 <?PHP
