@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.12.27">
+<!ENTITY version   "2022.01.16">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/77970-btrfs-snapshot-management-vm">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"bbdfb2907973d5b5d2b84f30bfc51f05">
+<!ENTITY md5		"b266ff6ffbdf5c203bb75ce09d5cc788">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,11 @@
 <CHANGES>
 ##Snapshots
 ###&version;
+
+  - Chg Error processing on GUI for Creates/Send 
+  - Fix Create Directory if doesn't exist.
+
+2021.12.27
 
   - Initial Beta Release.
 

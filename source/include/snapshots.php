@@ -566,9 +566,10 @@ EOT;
 
       case 'create_subvolume':
          $subvol = urldecode(($_POST['subvol']));
-         exec('btrfs subvolume create '.escapeshellarg($subvol), $result, $error) ;
+         exec('btrfs subvolume create '.escapeshellarg($subvol)." 2>&1", $result, $error) ;
          snap_manager_log('btrfs subvolume create '.$subvol.' '.$error.' '.$result[0]) ;
-         echo json_encode(TRUE);
+         if ($error=="1") $error_rtn = false ; else $error_rtn=true ;
+         echo json_encode(array("success"=>$error_rtn, "error"=>$result));
          break;
 
       case 'create_snapshot':
@@ -576,19 +577,30 @@ EOT;
            $subvol = urldecode(($_POST['subvol']));
            $readonly = urldecode(($_POST['readonly']));
            if ($readonly == "true")  $readonly = "-r" ; else $readonly="" ;
-           $ymd = date('YmdHis', time());
-           $snapshoty = str_replace("{YMD}", $ymd, $snapshot);
-           exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty), $result, $error) ;
+           $DateTimeF = findText("{", "}", $snapshot) ;
+           if ($DateTimeF == "YMD") $DateTime = "YmdHis" ; else $DateTime = $DateTimeF ;
+
+           $ymd = date($DateTime, time());
+           $snapshoty = str_replace("{".$DateTimeF."}", $ymd, $snapshot);
+
+#           check_to_dir($snapshoty) ;
+           $slashpos = substr(strrchr($snapshot,'/'), 1);
+           $directory = substr($snapshot, 0, - strlen($slashpos));
+           if (!is_dir($directory)) mkdir($directory, 0777, true) ;
+
+           exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)." 2>&1", $result, $error) ;
            snap_manager_log('btrfs snapshot create '.$snapshot.' '.$error.' '.$result[0]) ;
-           echo json_encode(TRUE);
+           if ($error=="1") $error_rtn = false ; else $error_rtn=true ;
+           echo json_encode(array("success"=>$error_rtn, "error"=>$result));
            break;
 
            case 'send_snapshot':
             $snapshot = urldecode(($_POST['snapshot']));
             $subvol = urldecode(($_POST['subvol']));
-            exec('btrfs send '.$subvol.' | btrfs receive '.escapeshellarg($snapshot), $result, $error) ;
+            exec('btrfs send '.$subvol.' | btrfs receive '.escapeshellarg($snapshot)." 2>&1", $result, $error) ;
             snap_manager_log('btrfs snapshot send '.$snapshot.' '.$error.' '.$result[0]) ;
-            echo json_encode(TRUE);
+            if ($error=="1") $error_rtn = false ; else $error_rtn=true ;
+            echo json_encode(array("success"=>$error_rtn, "error"=>$result));
             break;
 
            case 'change_ro':

@@ -204,6 +204,13 @@ if ($DateTimeF == "YMD") $DateTime = "YmdHis" ; else $DateTime = $DateTimeF ;
 $ymd = date($DateTime, time());
 $snapshoty = str_replace("{".$DateTimeF."}", $ymd, $snapshot);
 
+# Check To Directory exists.
+
+$slashpos = substr(strrchr($snapshot,'/'), 1);
+$directory = substr($snapshot, 0, - strlen($slashpos));
+if (!is_dir($directory)) mkdir($directory, 0777, true) ;
+
+
 if ($tag != "") { $snapshoty .= ".".$tag ;}  
 
 if ($dummyrun == true)
