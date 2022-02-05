@@ -47,6 +47,7 @@ switch ($_POST['table']) {
 case 'sv2':
   
    $urlpath    =  $_GET['path'] ;
+   $hideroot = $_POST['hideroot']=="true" ? false : true ;
 
    $config_file = $GLOBALS["paths"]["subvol_settings"];
 	$volsettings = @parse_ini_file($config_file, true);
@@ -57,7 +58,7 @@ case 'sv2':
    echo "<tbody><tr>";
    exec(' df -t btrfs --output="target" ',$targetcli);
    $i=1 ;
-   $list=build_list3($targetcli) ;
+   $list=build_list3($targetcli,$hideroot) ;
             
             
    $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='Create Subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
@@ -65,7 +66,9 @@ case 'sv2':
    foreach ($list as $key=>$vline) {
       #echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$vline["vol"]["vol"].'/')."</td>tr>";
       ksort($vline) ;
+      
       echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><td></td></td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
+      
       $ct = "<td title='"._("Remove Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
       if ($vline != NULL) {
          foreach ($vline as $snapkey=>$snapdetail) {
@@ -73,13 +76,18 @@ case 'sv2':
          if ($snapdetail["property"]["ro"] == "true" ) $checked = "checked" ; else $checked = "" ;
         
          $snap=$snapdetail["short_vol"] ;
+        # if ($snap == "/") $snap="" ;
          $savevol = $snapdetail["vol"] ;
          $remove = $snapdetail["vol"]."/".$snap ;
+         if ($snap == "/") {
+            $path=$snapdetail["vol"].'/';
+         } else {
          $path=$snapdetail["vol"].'/'.$snap ; 
+         }
 
          if ($snap != "~RECEIVED" && $snap!= "~INCREMENTAL") {
          echo "<tr><td>\t".$snap.'</td>' ;
-
+         
 
       if (isset($volsettings[$path]["default"])) {
          $subvoldft = $volsettings[$path]["default"] ;

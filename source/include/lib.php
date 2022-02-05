@@ -386,11 +386,32 @@ function get_snapshots($subvol){
 	
 
 
-function build_list3($lines) {
+function build_list3($lines,$hideroot=false) {
 	$btrfs_list = array() ;
 	$btrfs_uuid = array() ;
 	foreach ($lines as $line) {
 		if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
+#btrfs  sub show /mnt/disk1  | /bin/grep 'UUID' | /bin/awk '{print $2}'
+
+		$s	= shell_exec("/sbin/btrfs sub show ".escapeshellarg($line)." | /bin/grep 'UUID' | /bin/awk '{print $2}'");
+		$rc	= explode("\n", $s);
+		$btrfs_uuid[$rc[0]] = $line;
+		if ($hideroot==false) {
+		$btrfs_list[$line][$line] = [		
+		#	'uuid' =>$arrMatch['uuid'],
+		#	'puuid' =>$arrMatch['puuid'],
+		#	'ruuid' => $arrMatch['ruuid'],
+		'uuid' => $rc[0],
+		'puuid' => '-',
+		'ruuid' => '-',
+			'snap' => false,
+			'vol' => $line,
+			'path' => $line ,
+			'root' => true ,
+			'short_vol' => "/"
+			];	
+		
+}
 		
 		$vol=NULL ;
 
@@ -411,7 +432,8 @@ function build_list3($lines) {
 					'snap' => false,
 					'vol' => $line,
 					'path' => $path ,
-					'short_vol' => $arrMatch["path"]
+					'short_vol' => $arrMatch["path"] ,
+					'root' => false
 					];
 
 					$btrfs_uuid[$arrMatch['uuid']] = $path;
@@ -427,8 +449,9 @@ function build_list3($lines) {
 			}
 		} else 
 		{
-			$btrfs_list[$line] =  NULL ;		
-
+			if ($hideroot==true) {
+			$btrfs_list[$line] =  NULL ;
+			}
 
 		}
 	;
@@ -496,7 +519,9 @@ function process_subvolumes3($btrfs_list,$line, $uuid){
 		# Process Receieved Snapshots
 		#
 		$volume=$btrfs_list[$line] ;
+	    if (is_array($volume)) {
 			foreach ($volume as $vkey=>$vline) {
+				if ($volume["root"] == true) continue ;
 		
 
 				$puuid=$vline["puuid"] ;
@@ -527,7 +552,7 @@ function process_subvolumes3($btrfs_list,$line, $uuid){
 				} 
 					
 			}
-			
+		}	
 		return($btrfs_list) ;
 	}
 

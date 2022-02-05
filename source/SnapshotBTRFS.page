@@ -77,8 +77,8 @@ table.snapshot tr td:empty {  width: 50px; }
 
 
 $(function(){
-$('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2'});  
- 
+
+ $('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2' , hideroot:true}); 
 
 
 
@@ -203,7 +203,7 @@ $('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2'});
 	
 		$.post(SNAPURL,{'table':'run_schedule', 'subvol':subvol, 'slot':slot}).done(function(data)
 		{
-
+		
 		/* $("button[device='"+device+"']").html(" "+(op == "bind" ? "<?=_('Unbind');?>" : "<?=_('attach');?>"));*/
 		
 		
@@ -518,6 +518,36 @@ function removeSnapshot() {
 	}
 	showSwal();
 }
+
+	$( "#SnapBTRFS" ).arrive(".show-root", {onceOnly:false}, function()
+	{
+		$(this).css("display", $(".root-switch").is(":checked") ? "block" : "none");
+	});
+
+
+	$(function()
+	{
+		/*showStatus('<?=$sName?>');*/
+		/* Add icons to Tab/Title bar */
+
+
+	//	addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Root");?>"><input type="checkbox" class="root-switch" id="root-swt"></a>',
+	//							 "<?=_('BTRFS Volumes');?>");
+
+		$('.root-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Root');?>", off_label: "<?=_('Root');?>", checked: $.cookie('SNAP-root-view') != 'false'});
+		$('.root-switch').change(function()
+		{
+			$('.show-serial').slideToggle('slow');
+			$.cookie('SNAP-root-view', $('.root-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			});
+
+		});
+
+					var hideroot = document.getElementById("root-swt") ;
+		   // var hideroot = true ;
+$('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2' , hideroot:hideroot});  
+//$('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2'});
+
 </script>
 
 _(Snapshots BTRFS)_

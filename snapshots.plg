@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2022.01.16">
+<!ENTITY version   "2022.02.05">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/114600-plugin-snapshots/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"b266ff6ffbdf5c203bb75ce09d5cc788">
+<!ENTITY md5		"a130fd58d64f9d9eb7c1d02d6c17f6e2">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##Snapshots
 ###&version;
+
+  - Add Show root for BTRFS Volume.
+
+2022.0.16
 
   - Chg Error processing on GUI for Creates/Send 
   - Fix Create Directory if doesn't exist.
