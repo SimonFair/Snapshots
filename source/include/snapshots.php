@@ -207,7 +207,7 @@ case 'sv2':
       } else {
       $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
       }
-      echo "<tr><td>\t  ".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      if (count($snapdetail["subvolume"] ) >0) echo "<tr><td>\t  ".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
       
         
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -594,8 +594,8 @@ EOT;
 #           check_to_dir($snapshoty) ;
            $slashpos = substr(strrchr($snapshot,'/'), 1);
            $directory = substr($snapshot, 0, - strlen($slashpos));
-           if (!is_dir($directory)) mkdir($directory, 0777, true) ;
-
+           if (!is_dir($directory) && $snapshot != $subvol) mkdir($directory, 0777, true) ;
+           $result = NULL ;
            exec('btrfs subvolume snapshot '.$readonly.' '.escapeshellarg($subvol).' '.escapeshellarg($snapshoty)." 2>&1", $result, $error) ;
            snap_manager_log('btrfs snapshot create '.$snapshot.' '.$error.' '.$result[0]) ;
            if ($error=="1") $error_rtn = false ; else $error_rtn=true ;

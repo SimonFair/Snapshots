@@ -78,7 +78,7 @@ table.snapshot tr td:empty {  width: 50px; }
 
 $(function(){
 
- $('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2' , hideroot:true}); 
+// $('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2' , hideroot:hideroot}); 
 
 
 
@@ -247,9 +247,11 @@ function removeSnapshot() {
 	{
 		/* save table widths */
 
-
+	//var document_tab = get_tab_title_by_name("tab_snaps") ;
+	//var hideroot = document.getElementById("root-swt") ;
+	hideroot = $.cookie('SNAP-root-view') ;
 	
-		$.post(SNAPURL,{table:"sv2"},function(data)
+		$.post(SNAPURL,{table:"sv2", hideroot:hideroot},function(data)
 		{
 			maxWidth = [];
 			var toggled = $("tr.toggle-parts").filter(":visible").map(function(){return $(this).attr("name");}).get();
@@ -531,22 +533,22 @@ function removeSnapshot() {
 		/* Add icons to Tab/Title bar */
 
 
-	//	addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Root");?>"><input type="checkbox" class="root-switch" id="root-swt"></a>',
-	//							 "<?=_('BTRFS Volumes');?>");
+		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Root");?>"><input type="checkbox" class="root-switch" id="root-swt"></a>',
+								 "<?=_('BTRFS Volumes');?>");
 
-		$('.root-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Root');?>", off_label: "<?=_('Root');?>", checked: $.cookie('SNAP-root-view') != 'false'});
+		$('.root-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Show Root');?>", off_label: "<?=_('Show Root');?>", checked: $.cookie('SNAP-root-view') != 'false'});
 		$('.root-switch').change(function()
 		{
 			$('.show-serial').slideToggle('slow');
 			$.cookie('SNAP-root-view', $('.root-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			snap_view(tab_snaps);
 			});
 
 		});
 
-					var hideroot = document.getElementById("root-swt") ;
-		   // var hideroot = true ;
-$('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2' , hideroot:hideroot});  
-//$('#sv2').load('/plugins/snapshots/include/snapshots.php',{table:'sv2'});
+
+		snap_view(tab_snaps);
+
 
 </script>
 
