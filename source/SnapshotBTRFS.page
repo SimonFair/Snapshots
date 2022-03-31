@@ -536,7 +536,7 @@ function removeSnapshot() {
 		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Root");?>"><input type="checkbox" class="root-switch" id="root-swt"></a>',
 								 "<?=_('BTRFS Volumes');?>");
 
-		$('.root-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Show Root');?>", off_label: "<?=_('Show Root');?>", checked: $.cookie('SNAP-root-view') != 'false'});
+		$('.root-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Show Root');?>", off_label: "<?=_('Show Root');?>", checked: $.cookie('SNAP-root-view') == 'true'});
 		$('.root-switch').change(function()
 		{
 			$('.show-serial').slideToggle('slow');

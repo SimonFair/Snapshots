@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2022.03.05">
+<!ENTITY version   "2022.03.31">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/114600-plugin-snapshots/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"7f71cf3ba96c0e34ecfd4da8457869e0">
+<!ENTITY md5		"0177d21bdca2a69e1810f6b3e2d98ef0">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##Snapshots
 ###&version;
+
+  - Fix Toggle slider position
+
+2022.03.05
 
   - Add Toggle switch for showing root of drives.
   - Chg Hide Snapshots line if no snapshots 
