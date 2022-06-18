@@ -250,8 +250,9 @@ function removeSnapshot() {
 	//var document_tab = get_tab_title_by_name("tab_snaps") ;
 	//var hideroot = document.getElementById("root-swt") ;
 	hideroot = $.cookie('SNAP-root-view') ;
+	hidedocker = $.cookie('SNAP-docker-view') ;
 	
-		$.post(SNAPURL,{table:"sv2", hideroot:hideroot},function(data)
+		$.post(SNAPURL,{table:"sv2", hideroot:hideroot, hidedocker:hidedocker},function(data)
 		{
 			maxWidth = [];
 			var toggled = $("tr.toggle-parts").filter(":visible").map(function(){return $(this).attr("name");}).get();
@@ -526,6 +527,11 @@ function removeSnapshot() {
 		$(this).css("display", $(".root-switch").is(":checked") ? "block" : "none");
 	});
 
+		$( "#SnapBTRFS" ).arrive(".show-docker", {onceOnly:false}, function()
+	{
+		$(this).css("display", $(".docker-switch").is(":checked") ? "block" : "none");
+	});
+
 
 	$(function()
 	{
@@ -544,7 +550,21 @@ function removeSnapshot() {
 			snap_view(tab_snaps);
 			});
 
+		
+
+		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Docker");?>"><input type="checkbox" class="docker-switch" id="docker-swt"></a>',
+								 "<?=_('BTRFS Volumes');?>");
+
+		$('.docker-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Show Docker');?>", off_label: "<?=_('Show Docker');?>", checked: $.cookie('SNAP-docker-view') == 'true'});
+		$('.docker-switch').change(function()
+		{
+			$('.show-docker').slideToggle('slow');
+			$.cookie('SNAP-docker-view', $('.docker-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			snap_view(tab_snaps);
+			});
+
 		});
+
 
 
 		snap_view(tab_snaps);

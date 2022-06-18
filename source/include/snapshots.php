@@ -35,8 +35,10 @@ function make_button($text, $function, $entry,$disabled="") {
 
 $unraid = parse_plugin_cfg("dynamix",true);
 $display = $unraid["display"];
-global $btrfs_path, $btrfs_line ;
+global $btrfs_path, $btrfs_line, $docker_path ;
 #snap_manager_log('snap task'.$_POST['table']) ;
+$docker_path = parse_ini_file("/boot/config/docker.cfg")["DOCKER_IMAGE_FILE"] ;
+$docker_path = str_replace("/mnt/user/", "" ,$docker_path) ;
 switch ($_POST['table']) {
 
 // sv = BTRFS Volumes Tab Tables  
@@ -48,6 +50,7 @@ case 'sv2':
   
    $urlpath    =  $_GET['path'] ;
    $hideroot = $_POST['hideroot']=="true" ? false : true ;
+   $hidedocker = $_POST['hidedocker']=="true" ? false : true ;
 
    $config_file = $GLOBALS["paths"]["subvol_settings"];
 	$volsettings = @parse_ini_file($config_file, true);
@@ -58,7 +61,7 @@ case 'sv2':
    echo "<tbody><tr>";
    exec(' df -t btrfs --output="target" ',$targetcli);
    $i=1 ;
-   $list=build_list3($targetcli,$hideroot) ;
+   $list=build_list3($targetcli,$hideroot,$hidedocker) ;
             
             
    $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='Create Subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";

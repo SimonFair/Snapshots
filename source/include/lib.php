@@ -386,7 +386,8 @@ function get_snapshots($subvol){
 	
 
 
-function build_list3($lines,$hideroot=false) {
+function build_list3($lines,$hideroot=false,$hidedocker=false) {
+	global $docker_path ;
 	$btrfs_list = array() ;
 	$btrfs_uuid = array() ;
 	foreach ($lines as $line) {
@@ -415,15 +416,15 @@ function build_list3($lines,$hideroot=false) {
 		
 		$vol=NULL ;
 
-		exec('btrfs subvolume list  -opuqcgR '.$line,$vol);
+		exec('btrfs subvolume list  -puqcgR '.$line,$vol);
 		$btrfs_path = NULL ;
-	
+		#$docker_path = "system/docker/docker" ;
 		if ($vol != NULL) {
 			foreach ($vol as $vline) {
 
-			
+			$docker_path = $docker_path = str_replace($line."/", "" ,$docker_path) ;
 				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>[\S\D]+)/', $vline, $arrMatch)) {
- 
+					if (substr($arrMatch["path"] , 0, strlen($docker_path)) == $docker_path && $hidedocker == true) continue ;
 					$path=$line.'/'.$arrMatch["path"] ;
 					$btrfs_list[$line][$path] = [		
 					'uuid' =>$arrMatch['uuid'],
@@ -463,18 +464,20 @@ return($btrfs_list) ;
 
 }
 function process_subvolumes3($btrfs_list,$line, $uuid){
+	global $docker_path ;
 	# Process Snapshots
 	#
 		$vol=NULL ;
 		exec('btrfs subvolume list  -spuqcgR '.$line,$vol);
 		$btrfs_path = NULL ;
-	
+	#	$docker_path = "system/docker/docker" ;
+
 		foreach ($vol as $vline) {
 	
 	
 	
 			if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} otime (?P<odate>\S+) (?P<otime>\S+) parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
-	
+				if (substr($arrMatch["path"] , 0, strlen($docker_path)) == $docker_path ) continue ;
 	
 				 unset(  $btrfs_list[$line][$line.'/'.$arrMatch["path"]] );
 	
@@ -557,6 +560,7 @@ function process_subvolumes3($btrfs_list,$line, $uuid){
 	}
 
 function subvol_parents() {
+	global $docker_path ;
 	$btrfs_list = array() ;
 	$btrfs_uuid = array() ;
 	exec(' df -t btrfs --output="target" ',$lines);
@@ -567,11 +571,13 @@ function subvol_parents() {
 
 		exec('btrfs subvolume list  -puqcgaR '.$line,$vol);
 		$btrfs_path = NULL ;
+#		$docker_path = "system/docker/docker" ;
 
 		if ($vol != NULL) {
 			foreach ($vol as $vline) {
 
 				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
+					if (substr($arrMatch["path"] , 0 , strlen($docker_path)) == $docker_path ) continue ;
                     $key=$line.'/'.$arrMatch["path"] ;
 					$btrfs_list[$key] = [		
 					'vol' => $line,
@@ -613,7 +619,7 @@ function build_list_zfs($lines) {
 		$vol=NULL ;
 
 		$zfs = null ;
-		exec('zfs list -H',$zfs);
+		exec('zfs list -H -r '.$pool_name,$zfs);
 		$zfs = preg_replace('/\s+/', ' ', $zfs);
 	
 		if ($pool_name != NULL) {
@@ -639,7 +645,7 @@ function build_list_zfs($lines) {
 
 
 		$zfs=null ;
-		exec('zfs list -H -t snapshot',$zfs);
+		exec('zfs list -H -t snapshot -r '.$pool_name,$zfs);
 		$zfs = preg_replace('/\s+/', ' ', $zfs);
 	
 		if ($pool_name != NULL) {
