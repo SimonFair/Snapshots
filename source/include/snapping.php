@@ -304,7 +304,7 @@ $snaps=remove_tags($list, $tag) ;
 } else $snaps = $list ;
 $snaps=array_reverse($snaps) ;
 
-if ($logging == "yes") snap_manager_log('Tag: '.$tag.' Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"].' Percentage:'.$schedule["volumeusage"]) ;
+if ($logging == "yes") snap_manager_log('Tag: '.$tag.' Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"].' Percentage:'.$schedule["volumeusage"]." For ".$arg1." Slot:".$slot) ;
 
 
 
