@@ -138,6 +138,7 @@ _(Snap schedule)_:
 : <select name="snapscheduleenabled" >
   <?=mk_option($subvolsch['snapscheduleenabled'], "yes", _("Enabled"))?>
   <?=mk_option($subvolsch['snapscheduleenabled'], "no", _("Disabled"))?>
+  <?=mk_option($subvolsch['snapscheduleenabled'], "man", _("Manual"))?>
   </select>
 
 :snap_enabled_help:

@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2022.06.25">
+<!ENTITY version   "2022.08.05">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/114600-plugin-snapshots/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"47492188a14df9176ecbcff9d29318b4">
+<!ENTITY md5		"a655733bdd51154a29a017bd37b460aa">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##Snapshots
 ###&version;
+
+  - Add manual option to schedule.
+
+2022.08.05
 
   - Fix count of snapshots to remove.
   
@@ -139,7 +143,16 @@ The 'remove' script.
 <FILE Run="/bin/bash" Method="remove">
 <INLINE>
 
-removepkg &packages;/&name;-&version;.txz
+# Remove installed packages
+find "&packages;/" -type f -iname "*.txz" -delete
+
+rm -f /tmp/plugins/&name;.plg 
+rm -r /tmp/&name;
+rm  -f /boot/config/plugins/&name;/*.cron 
+update_cron
+
+# Remove all plugin files from emhttp.
+removepkg &packages;/&name;-&version;.txz 
 
 echo 
 echo "-----------------------------------------------------------"

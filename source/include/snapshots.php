@@ -38,6 +38,7 @@ $display = $unraid["display"];
 global $btrfs_path, $btrfs_line, $docker_path ;
 #snap_manager_log('snap task'.$_POST['table']) ;
 $docker_path = parse_ini_file("/boot/config/docker.cfg")["DOCKER_IMAGE_FILE"] ;
+#$docker_path= "/mnt/user/system/docker/docker" ;
 $docker_path = str_replace("/mnt/user/", "" ,$docker_path) ;
 switch ($_POST['table']) {
 
@@ -107,6 +108,7 @@ case 'sv2':
          echo "</td>" ;
 
          echo '<td><input type="checkbox" '.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
+        # echo '<td><input type="checkbox" '.$checked.' onclick="ro_subvolume (this)" value="'.urlencode($path).'">'."</td>" ;
 
          echo "<td title='"._("Delete Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
          $mpoint			.= "<i class='fa fa-pencil partition-hdd'></i><a title='"._("Change Disk Mount Point")."' class='exec' onclick='chg_mountpoint(\"{$partition['serial']}\",\"{$partition['part']}\",\"{$device}\",\"{$partition['fstype']}\",\"{$mount_point}\",\"{$disk_label}\");'>{$mount_point}</a>";
@@ -172,6 +174,11 @@ case 'sv2':
             $colour_lable="Disabled";
             $run_disabled = "disabled";
              break ;
+         case 'man' :   
+            $colour = "blue" ;
+            $colour_lable="Manual";
+            $run_disabled = "";
+            break ;
          default :   
             $colour = "grey" ;
             $colour_lable="Undefined";
