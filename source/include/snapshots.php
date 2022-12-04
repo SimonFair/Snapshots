@@ -11,6 +11,7 @@
 $plugin = "snapshots";
 $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
 $translations = file_exists("$docroot/webGui/include/Translations.php");
+#ini_set('error_reporting', E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 
 if ($translations) {
 	/* add translations */
@@ -210,6 +211,7 @@ case 'sv2':
       $snapvol=$path ;
       $snapvol=str_replace( "/", "-", $snapvol) ;
       $snapvol=str_replace( "~", "-", $snapvol) ;
+      $snapvol=str_replace( " ", "_", $snapvol) ;
       
       if ($_COOKIE[$snapvol] == "false" || !isset($_COOKIE[$snapvol])) {
          $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-plus-square fa-append'></i></span>" ;
@@ -217,7 +219,7 @@ case 'sv2':
       } else {
       $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
       }
-      if (count($snapdetail["subvolume"] ) >0) echo "<tr><td>\t  ".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      if ($snapdetal["subvolume"] != null ) { if (count($snapdetail["subvolume"] ) >0) echo "<tr><td>\t  ".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ; }
       
         
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
