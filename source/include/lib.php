@@ -22,7 +22,7 @@ define('DEFAULT_TARGETCLI_CONFIG', '{
   "storage_objects": [],
   "targets": []
 }');
-
+ini_set('error_reporting', E_ERROR | E_PARSE | E_NOTICE);
 $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"subvol_settings"	=> "/tmp/{$plugin}/config/subvol.cfg",
 			"subvol_schedule"	=> "/tmp/{$plugin}/config/subvolsch.cfg",
@@ -139,6 +139,7 @@ function set_subvol_config($sn, $var, $val) {
 	$config_file = $GLOBALS["paths"]["subvol_settings"];
 	$config = @parse_ini_file($config_file, true);
 	$config[$sn][$var] = htmlentities($val, ENT_COMPAT);
+	if ($config[$sn][$var] === "") unset($config[$sn][$var]) ;
 	save_ini_file($config_file, $config);
 	return (isset($config[$sn][$var])) ? $config[$sn][$var] : FALSE;
 }
@@ -296,7 +297,7 @@ function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
 			break;	
 		}
 	#var_dump($val) ;
-	$val['vmselection'] = implode("," , $val['vmselection']) ;
+	if($val['vmselection'] != "") $val['vmselection'] = implode("," , $val['vmselection']??[]) ;
 	$config[$sn][$schedule_seq] = $val ;
 
 	save_json_file($config_file_json, $config) ;
@@ -360,6 +361,8 @@ function get_snapshots($subvol){
 	#
 		$vol=NULL ;
 		exec('btrfs subvolume list  -s '.$subvol,$vol);
+		#exec('cat /mnt/user/appdata/snapshotinput/Inputs.txt ',$vol);
+		
 		$btrfs_snaps_path = NULL ;
 	
 		foreach ($vol as $vline) {
@@ -386,15 +389,17 @@ function get_snapshots($subvol){
 	
 
 
-function build_list3($lines,$hideroot=false,$hidedocker=false) {
+function build_list3($lines,$hideroot=false,$hidedocker=false,$hidedirs=false) {
 	global $docker_path ;
 	$btrfs_list = array() ;
 	$btrfs_uuid = array() ;
+	#$lines=array("/mnt/cache") ;
 	foreach ($lines as $line) {
 		if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
 #btrfs  sub show /mnt/disk1  | /bin/grep 'UUID' | /bin/awk '{print $2}'
 
 		$s	= shell_exec("/sbin/btrfs sub show ".escapeshellarg($line)." | /bin/grep 'UUID' | /bin/awk '{print $2}'");
+		#$s	= shell_exec("cat /mnt/user/appdata/snapshotinput/Inputshow.txt  | /bin/grep 'UUID' | /bin/awk '{print $2}'");
 		$rc	= explode("\n", $s);
 		$btrfs_uuid[$rc[0]] = $line;
 		if ($hideroot==false) {
@@ -409,13 +414,15 @@ function build_list3($lines,$hideroot=false,$hidedocker=false) {
 			'vol' => $line,
 			'path' => $line ,
 			'root' => true ,
-			'short_vol' => "/"
+			'short_vol' => "/",
+			'notfolder' => true
 			];	
 		
 }
 		
 		$vol=NULL ;
 
+		#exec('cat /mnt/user/appdata/snapshotinput/InputpuqcgR.txt ',$vol);
 		exec('btrfs subvolume list  -puqcgR '.$line,$vol);
 		$btrfs_path = NULL ;
 
@@ -434,7 +441,8 @@ function build_list3($lines,$hideroot=false,$hidedocker=false) {
 					'vol' => $line,
 					'path' => $path ,
 					'short_vol' => $arrMatch["path"] ,
-					'root' => false
+					'root' => false,
+					'notfolder' => true 
 					];
 
 					$btrfs_uuid[$arrMatch['uuid']] = $path;
@@ -458,7 +466,30 @@ function build_list3($lines,$hideroot=false,$hidedocker=false) {
 	;
 		$btrfs_list = process_subvolumes3($btrfs_list,$line,$btrfs_uuid,$hidedocker) ;
 		$btrfs_list = process_received($btrfs_list,$line) ;
+		if ($hidedirs == true) {
+		$dirlist = scandir($line) ;
+	#	$dirlist = "" ;
+		foreach ($dirlist as $dir) {
+			$path=$line.'/'.$dir;
+			if (isset($btrfs_list[$line][$path])) continue ;
+			if ($dir == "." || $dir == "..") continue;
+			
+			$btrfs_list[$line][$path] = [		
+				'uuid' => 0,
+				'puuid' => 0,
+				'ruuid' => 0,
+				'snap' => false,
+				'vol' => $line,
+				'path' => $path ,
+				'short_vol' => $dir ,
+				'root' => false,
+				'notfolder' => false 
+				];
+
+			} 
+		}
 	}
+
 	ksort($btrfs_list, SORT_NATURAL) ;
 return($btrfs_list) ;
 
@@ -468,6 +499,7 @@ function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false){
 	# Process Snapshots
 	#
 		$vol=NULL ;
+		#exec('cat /mnt/user/appdata/snapshotinput/InputspuqcgR.txt ',$vol);
 		exec('btrfs subvolume list  -spuqcgR '.$line,$vol);
 		$btrfs_path = NULL ;
 	
@@ -490,7 +522,7 @@ function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false){
 				} else { $incremental = NULL ;}
 	
 			
-				
+				#$btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = Array() ;
 				 $btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = [		
 				'uuid' =>$arrMatch['uuid'],
 				'puuid' =>$arrMatch['puuid'],
@@ -501,7 +533,8 @@ function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false){
 				'vol' => $line,
 				'incremental' => $incremental,
 				'path' => $arrMatch["path"] ,
-				'parent' => $subvol 
+				'parent' => $subvol ,
+				'notfolder' => true 
 				  ];
 	
 				# Get ro status
@@ -548,7 +581,8 @@ function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false){
 					'incremental' => $incremental,
 					'property' => $vline["property"] ,
 					'path' => $vline["path"] ,
-					'parent' => $subvol 
+					'parent' => $subvol,
+					'notfolder' => true  
 					  ];
 		
 				} 
@@ -567,7 +601,8 @@ function subvol_parents() {
 		if ($line == "/etc/libvirt" || $line == "/var/lib/docker" ||$line == "Mounted on") continue ;
 		
 		$vol=NULL ;
-
+		
+		#exec('cat /mnt/user/appdata/snapshotinput/InputpuqcgaR.txt ',$vol);
 		exec('btrfs subvolume list  -puqcgaR '.$line,$vol);
 		$btrfs_path = NULL ;
 

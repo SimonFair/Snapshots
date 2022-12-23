@@ -197,6 +197,20 @@ $(function(){
 		});
 	}
 
+		function OnChangeCheckboxSV(box)
+	{
+ 			if (confirm("Are you sure you want to set subvolume to RO")) {
+				$.post(SNAPURL,{'table':"change_ro",'checked':box.checked, 'path':box.value}).done(function(data)
+				
+		{
+
+
+		
+		});
+		}
+	}
+
+
 		function run_schedule(subvol, slot) {
 		/* add spinning and disable button */
 
@@ -251,8 +265,9 @@ function removeSnapshot() {
 	//var hideroot = document.getElementById("root-swt") ;
 	hideroot = $.cookie('SNAP-root-view') ;
 	hidedocker = $.cookie('SNAP-docker-view') ;
+	hidedirs = $.cookie('SNAP-dirs-view') ;
 	
-		$.post(SNAPURL,{table:"sv2", hideroot:hideroot, hidedocker:hidedocker},function(data)
+		$.post(SNAPURL,{table:"sv2", hideroot:hideroot, hidedocker:hidedocker, hidedirs:hidedirs},function(data)
 		{
 			maxWidth = [];
 			var toggled = $("tr.toggle-parts").filter(":visible").map(function(){return $(this).attr("name");}).get();
@@ -563,6 +578,19 @@ function removeSnapshot() {
 			snap_view(tab_snaps);
 			});
 
+	
+
+		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Dirs");?>"><input type="checkbox" class="dir-switch" id="dir-swt"></a>',
+								 "<?=_('BTRFS Volumes');?>");
+
+		$('.dir-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Show Dirs');?>", off_label: "<?=_('Show Dirs');?>", checked: $.cookie('SNAP-dirs-view') == 'true'});
+		$('.dir-switch').change(function()
+		{
+			$('.show-dirs').slideToggle('slow');
+			$.cookie('SNAP-dirs-view', $('.dir-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			snap_view(tab_snaps);
+			});
+
 		});
 
 
@@ -616,7 +644,41 @@ _(Snapshots BTRFS)_
 	</div>
 </div>	
 
-	
+<div style="display:none;" data-survey-name="ro_subvolume" data-survey-title="<?=_('ro_subvolume');?>">
+	<div data-question data-question-title="" data-question-button-done="<?=_('Change');?>" data-question-icon="warning">
+		<div data-question-format>
+			[surveyOption]
+		</div>
+		<div data-question-content>
+			<div class="swal-title" style="font-size: 20px;"><?=_('This will change RO for subvolume');?>:</div>
+			<div style="margin-bottom: 15px;margin-top: 15px;">
+				<span style="font-weight: bold;">{0} {1}</span>
+			</div>
+			<div class="swal-title" style="font-size: 20px;">
+				<span class="red" style="font-weight: bold;"><?=_('Are you sure');?>?</span>
+			</div>
+		</div>
+		<div data-question-load></div>
+		<div data-question-done></div>
+	</div>
+	<div data-survey-done>
+		//$.post(SNAPURL,{table:"ro_subvolume",subvol:surveyOption}).done(function(data)
+		$.post(SNAPURL,{'table':"change_ro",'checked':box.checked, 'path':box.value}).done(function(data)
+		{
+			
+			swalShowResult((data == "true") ? true : false);
+			parent.window.location.reload()
+		},"json").fail(function(){swalShowResult(false);});
+		parent.window.location.reload() ;
+	</div>
+	<div>
+		<script type="text/javascript">
+			$(function(){
+				window.ro_subvolume = function(i){dousbipDevicesSurvey("ro_subvolume",decodeURIComponent(i.value),i.checked);}
+			});
+		</script>
+	</div>
+</div>	
 
 <div style="display:none;" data-survey-name="delete_subvolume" data-survey-title="<?=_('delete_subvolume');?>">
 	<div data-question data-question-title="" data-question-button-done="<?=_('Delete');?>" data-question-icon="warning">

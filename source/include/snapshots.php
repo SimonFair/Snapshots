@@ -11,7 +11,7 @@
 $plugin = "snapshots";
 $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
 $translations = file_exists("$docroot/webGui/include/Translations.php");
-
+#ini_set('error_reporting', E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 if ($translations) {
 	/* add translations */
 	$_SERVER['REQUEST_URI'] = 'snapshots';
@@ -52,6 +52,7 @@ case 'sv2':
    $urlpath    =  $_GET['path'] ;
    $hideroot = $_POST['hideroot']=="true" ? false : true ;
    $hidedocker = $_POST['hidedocker']=="true" ? false : true ;
+   $hidedirs = $_POST['hidedirs']=="false" ? false : true ;
 
    $config_file = $GLOBALS["paths"]["subvol_settings"];
 	$volsettings = @parse_ini_file($config_file, true);
@@ -62,7 +63,7 @@ case 'sv2':
    echo "<tbody><tr>";
    exec(' df -t btrfs --output="target" ',$targetcli);
    $i=1 ;
-   $list=build_list3($targetcli,$hideroot,$hidedocker) ;
+   $list=build_list3($targetcli,$hideroot,$hidedocker,$hidedirs) ;
             
             
    $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='Create Subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
@@ -71,7 +72,23 @@ case 'sv2':
       #echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$vline["vol"]["vol"].'/')."</td>tr>";
       ksort($vline) ;
       
-      echo "<tr><td>".preg_replace('/\]  +/',']',$key)."</td><td></td><td></td><td></td><td></td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><td></td></td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
+      echo "<tr><td>".preg_replace('/\]  +/',']',$key) ;
+      $pathkey = $key ;
+      if (isset($volsettings[$pathkey]["default"])) {
+         $subvoldft = $volsettings[$pathkey]["default"] ;
+      } else { $subvoldft = _("Undefined") ;}
+         echo '<td>' ;
+         echo $subvoldft ;
+         echo "</td>" ;
+
+         if (isset($volsettings[$pathkey]["sendto"])) {
+            $subvolsendto = $volsettings[$pathkey]["sendto"] ;
+         } else { $subvolsendto = _("Undefined") ;}
+         echo '<td>' ;
+         echo $subvolsendto ;
+         echo "</td>" ;
+         $parm="{$pathkey}\",\"{$key}" ;
+      echo "<td>".make_button("Del All Snapshots", "remove_all_snapshots", $parm)."</td><td>".make_button("Snapshot All", "snapshot_all", $parm)."</td><td>".make_button("Create Subvolume", "create_subvolume" ,$key.'/')."</td><td><a href=\"/Snapshots/SnapshotEditSettings?s=".urlencode($pathkey)."\"><i class='fa fa-cog' title=\""._('Settings').$pathkey."\"></i></a><td></td></td><td><a href=\"Browse?dir=/mnt/user/".urlencode($name)."\"><i class=\"icon-u-tab\" title=\""._('Browse')." /mnt/user/".urlencode($name)."\"></i></a></td><tr>";
       
       $ct = "<td title='"._("Remove Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";
       if ($vline != NULL) {
@@ -107,10 +124,12 @@ case 'sv2':
          echo $subvolsendto ;
          echo "</td>" ;
 
-         echo '<td><input type="checkbox" '.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ;
+         if (!$snapdetail["root"]) echo '<td><input type="checkbox" '.$checked.' onclick="OnChangeCheckbox (this)" value="'.$path.'">'."</td>" ; 
+         else echo "<td></td>" ;
         # echo '<td><input type="checkbox" '.$checked.' onclick="ro_subvolume (this)" value="'.urlencode($path).'">'."</td>" ;
 
-         echo "<td title='"._("Delete Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
+        if (!$snapdetail["root"]) echo "<td title='"._("Delete Subvolume")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='delete_subvolume(\"{$remove}\")'><i class='fa fa-remove hdd'></a>" ;
+        else echo '<td><span>Select All:</span><input type="checkbox" '.$checked.' onclick="OnChangeCheckboxSelect (this)" value="'.$path.'">'."</td>" ;
          $mpoint			.= "<i class='fa fa-pencil partition-hdd'></i><a title='"._("Change Disk Mount Point")."' class='exec' onclick='chg_mountpoint(\"{$partition['serial']}\",\"{$partition['part']}\",\"{$device}\",\"{$partition['fstype']}\",\"{$mount_point}\",\"{$disk_label}\");'>{$mount_point}</a>";
          $mpoint			.= "{$rm_partition}</span>";
          if ($subvoldft != _("Undefined")) {
@@ -129,7 +148,8 @@ case 'sv2':
          ksort($slots) ;
          $slotcount=count($slots) ;
 
-      echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
+      if ($snapdetail["notfolder"] || $snapdetail["root"]) echo "</td><td> ".make_button("Create Snapshot", "create_snapshot", $parm)."</td>" ;
+      else echo "</td><td> ".make_button("Convert to Subvol", "convert_subvol", $parm,'disabled')."</td>" ;
       echo "<td><a href=\"/Snapshots/SnapshotEditSettings?s=".urlencode($path)."\"><i class='fa fa-cog' title=\""._('Settings').$path."\"></i></a></td>" ;
       if ($slotcount<1) {
          echo "<td><i class=\"fa fa-circle orb grey-orb middle\" title=\"Undefined\"></i><a href=\"/Snapshots/SnapshotSchedule?s=".urlencode($path)."&seq=".urlencode("99")."\"><i class='fa fa-plus' title=\""._('Add Schedule Slot')."\"></i></a></td>" ;
@@ -210,6 +230,7 @@ case 'sv2':
       $snapvol=$path ;
       $snapvol=str_replace( "/", "-", $snapvol) ;
       $snapvol=str_replace( "~", "-", $snapvol) ;
+      $snapvol=str_replace( " ", "_", $snapvol) ;
       
       if ($_COOKIE[$snapvol] == "false" || !isset($_COOKIE[$snapvol])) {
          $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-plus-square fa-append'></i></span>" ;
@@ -217,7 +238,7 @@ case 'sv2':
       } else {
       $toggle = "<span class='exec toggle-rmtip' snapvol='{$snapvol}'><i class='fa fa-minus-square fa-append'></i></span>" ;
       }
-      if (count($snapdetail["subvolume"] ) >0) echo "<tr><td>\t  ".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
+      if (isset($snapdetail["subvolume"])) if (count($snapdetail["subvolume"] ) >0) echo "<tr><td>\t  ".$snap._("(Snapshots)").$toggle.' </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>' ;
       
         
          foreach ($snapdetail["subvolume"] as $subvolname=>$subvoldetail) {
@@ -297,7 +318,7 @@ EOT;
            echo "<tr><td>" ;
 
            echo "</td></tr>" ;
-           $list=build_list3($targetcli) ;
+           $list=build_list3($targetcli,true,true,true) ;
            echo "<tr><td>" ;
            var_dump($list) ;
            echo "</td></tr>" ;
