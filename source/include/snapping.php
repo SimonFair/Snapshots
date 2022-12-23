@@ -190,7 +190,7 @@ exec(' df -t btrfs --output="target" ',$df);
 
 $list = build_list3($df) ;
 
-$list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
+$list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"]??[] ;
 
 $snaps_save=array_reverse($list) ;
 
@@ -301,7 +301,7 @@ $list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
 if ($tag != "") {
 
 $snaps=remove_tags($list, $tag) ;
-} else $snaps = $list ;
+} else $snaps = $list??[]  ;
 $snaps=array_reverse($snaps) ;
 
 if ($logging == "yes") snap_manager_log('Tag: '.$tag.' Count: '.count($snaps).' Occurences: '.$schedule["occurences"].' Days: '.$schedule["days"].' Percentage:'.$schedule["volumeusage"]." For ".$arg1." Slot:".$slot) ;

@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2022.12.04">
+<!ENTITY version   "2022.12.23">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/114600-plugin-snapshots/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"0915e45920a7103167b931977a70f77c">
+<!ENTITY md5		"5700245d5278c9f070b5501e5e18c4c1">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##Snapshots
 ###&version;
+
+  - PHP8 Fixes.
+
+2022.12.04
 
   - PHP8 Fixes.
 
