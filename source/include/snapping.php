@@ -186,11 +186,16 @@ if ($dummyrun == true)
 $parents=subvol_parents() ;
 $parent=$parents[$subvol]["vol"].'/' ;
 $lines[]=$parent ;
+if ($parent == "/") {
+	$subvol_save = substr($subvol,0,-1) ;
+	$parents[$subvol_save]["vol"] = $subvol_save ;
+	$parent = $subvol ;
+} else $subvol_save =  $subvol ;
 exec(' df -t btrfs --output="target" ',$df);
 
 $list = build_list3($df) ;
 
-$list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"]??[] ;
+$list=$list[$parents[$subvol_save]["vol"]][$subvol_save]["subvolume"]??[] ;
 
 $snaps_save=array_reverse($list) ;
 
@@ -292,11 +297,16 @@ if ($schedule["Removal"]!="no") {
 $parents=subvol_parents() ;
 $parent=$parents[$subvol]["vol"].'/' ;
 $lines[]=$parent ;
+if ($parent == "/") {
+	$subvol_removal = substr($subvol,0,-1) ;
+	$parents[$subvol_removal]["vol"] = $subvol_removal ;
+	$parent = $subvol ;
+} else $subvol_removal =  $subvol ;
 exec(' df -t btrfs --output="target" ',$df);
 
 $list = build_list3($df) ;
 
-$list=$list[$parents[$subvol]["vol"]][$subvol]["subvolume"] ;
+$list=$list[$parents[$subvol_removal]["vol"]][$subvol_removal]["subvolume"] ;
 
 if ($tag != "") {
 
@@ -355,13 +365,13 @@ if ($schedule["volumeusage"] > 0)
 
 	$dryrunsize =0;
 	
-	$freespace = disk_free_space($parents[$subvol]["vol"]) ;
-	$totalspace = disk_total_space($parents[$subvol]["vol"]) ;
+	$freespace = disk_free_space($parents[$subvol_removal]["vol"]) ;
+	$totalspace = disk_total_space($parents[$subvol_removal]["vol"]) ;
 	$usedspace =  $spacepostdelete = ($totalspace - $freespace);
 	
   	foreach($snaps as $path=>$snap) {
 		$percent = "" ;
-		$totalspace = disk_total_space($parents[$subvol]["vol"]) ;
+		$totalspace = disk_total_space($parents[$subvol_removal]["vol"]) ;
 		if ($schedule["Removal"] == "dry")
 		{
 			$percent = round(($spacepostdelete / $totalspace * 100) , 0) ;
@@ -369,9 +379,9 @@ if ($schedule["volumeusage"] > 0)
 		else {
 			$percentdf =array() ;
 			#shell_exec("df | grep /mnt/cache | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//'",$percentdf,$error)  ;	
-			exec("df | grep ".$parents[$subvol]["vol"]." | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//'"  ,$percentdfv,$error)  ;	 
+			exec("df | grep ".$parents[$subvol_removal]["vol"]." | awk '/[0-9]%/{print $(NF-1)}' | sed 's/%//'"  ,$percentdfv,$error)  ;	 
 			
-			$freespace = disk_free_space($parents[$subvol]["vol"]) ;
+			$freespace = disk_free_space($parents[$subvol_removal]["vol"]) ;
 			$usedspace = ($totalspace - $freespace);
 			$percent = round(($usedspace / $totalspace * 100) , 0) ;
 			$percentdf=$percentdfv[0] ;
