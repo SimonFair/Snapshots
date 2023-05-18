@@ -197,7 +197,7 @@ $(function(){
 		});
 	}
 
-		function run_schedule(subvol, slot) {
+	function run_schedule(subvol, slot) {
 		/* add spinning and disable button */
 
 	
@@ -247,12 +247,13 @@ function removeSnapshot() {
 	{
 		/* save table widths */
 
-	//var document_tab = get_tab_title_by_name("tab_snaps") ;
-	//var hideroot = document.getElementById("root-swt") ;
-	hideroot = $.cookie('SNAP-root-view') ;
-	hidedocker = $.cookie('SNAP-docker-view') ;
+		//var document_tab = get_tab_title_by_name("tab_snaps") ;
+		//var hideroot = document.getElementById("root-swt") ;
+		hideroot = $.cookie('SNAP-root-view') ;
+		hidedocker = $.cookie('SNAP-docker-view') ;
+		hideexcluded = $.cookie('SNAP-exclude-view') ;
 	
-		$.post(SNAPURL,{table:"sv2", hideroot:hideroot, hidedocker:hidedocker},function(data)
+		$.post(SNAPURL,{table:"sv2", hideroot:hideroot, hidedocker:hidedocker, hideexcluded:hideexcluded},function(data)
 		{
 			maxWidth = [];
 			var toggled = $("tr.toggle-parts").filter(":visible").map(function(){return $(this).attr("name");}).get();
@@ -527,11 +528,15 @@ function removeSnapshot() {
 		$(this).css("display", $(".root-switch").is(":checked") ? "block" : "none");
 	});
 
-		$( "#SnapBTRFS" ).arrive(".show-docker", {onceOnly:false}, function()
+	$( "#SnapBTRFS" ).arrive(".show-docker", {onceOnly:false}, function()
 	{
 		$(this).css("display", $(".docker-switch").is(":checked") ? "block" : "none");
 	});
 
+	$( "#SnapBTRFS" ).arrive(".show-exclude", {onceOnly:false}, function()
+	{
+		$(this).css("display", $(".exclude-switch").is(":checked") ? "block" : "none");
+	});
 
 	$(function()
 	{
@@ -548,9 +553,7 @@ function removeSnapshot() {
 			$('.show-serial').slideToggle('slow');
 			$.cookie('SNAP-root-view', $('.root-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
 			snap_view(tab_snaps);
-			});
-
-		
+		});
 
 		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Docker");?>"><input type="checkbox" class="docker-switch" id="docker-swt"></a>',
 								 "<?=_('BTRFS Volumes');?>");
@@ -561,9 +564,20 @@ function removeSnapshot() {
 			$('.show-docker').slideToggle('slow');
 			$.cookie('SNAP-docker-view', $('.docker-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
 			snap_view(tab_snaps);
-			});
-
 		});
+
+		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Excluded");?>"><input type="checkbox" class="exclude-switch" id="exclude-swt"></a>',
+								 "<?=_('BTRFS Volumes');?>");
+
+		$('.exclude-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Show Excluded');?>", off_label: "<?=_('Show Excluded');?>", checked: $.cookie('SNAP-exclude-view') == 'true'});
+		$('.exclude-switch').change(function()
+		{
+			$('.show-exclude').slideToggle('slow');
+			$.cookie('SNAP-exclude-view', $('.exclude-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			snap_view(tab_snaps);
+		});
+
+	});
 
 
 
@@ -572,7 +586,7 @@ function removeSnapshot() {
 
 </script>
 
-_(Snapshots BTRFS)_
+**_(Snapshots BTRFS)_**
 
 <pre><form id="SnapBTRFS" onsubmit="return false"><table id='sv2' class='disk_status snapshot'><tr><td><div class="spinner"></div></td></tr></table></form></pre><br>
 

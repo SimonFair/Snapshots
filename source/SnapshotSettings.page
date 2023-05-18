@@ -12,6 +12,17 @@ $cfg = parse_plugin_cfg($sName);
 <form markdown="1" name="snapshot_plugin_settings" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" name="#file" value="<?=$sName?>/<?=$sName?>.cfg">
 
+_(Excluded volumes by path)_:
+<!-- : <span style="margin:0 8px 0 20px;font-weight:bold">_(Excluded folders)_:</span> -->
+: <input type="text" name="exclude" value="<?=$cfg['exclude']?>" class="narrow">
+  <span class="fa fa-question-circle fa-fw" onclick="HelpButton();return false;"></span>
+
+<blockquote class="inline_help" style="display: none;">
+Use to exclude folders from the snapshots interface. Multiple exclusions are separated by a comma.<br>
+Examples are paths, e.g. <strong>`/mnt/disk1/.snapshots/`</strong>, folder names, e.g. <strong>`backups`</strong>, 
+and partial paths, e.g. <strong>`backup/disk`</strong>.
+</blockquote>
+
 _(Show debug page)_:
 : <select name="debug">
   <?=mk_option($cfg['debug'], "false", _("Hide"))?>
