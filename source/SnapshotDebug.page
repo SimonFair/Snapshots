@@ -1,6 +1,7 @@
 Menu="Snapshots"
 Title="Debug"
 icon="fa-file"
+Cond="shell_exec('< /boot/config/plugins/snapshots/snapshots.cfg grep debug | grep true')"
 ---
 <?PHP
 /* Copyright 2020-2020, Simon Fairweather

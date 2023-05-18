@@ -1,0 +1,23 @@
+Icon="fa-clone"
+Author="dcflachs"
+Title="Snapshots"
+Type="xmenu"
+Menu="Utilities"
+---
+<?php 
+$sName = "snapshots";
+$cfg = parse_plugin_cfg($sName);
+?>
+
+<form markdown="1" name="snapshot_plugin_settings" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="#file" value="<?=$sName?>/<?=$sName?>.cfg">
+
+_(Show debug page)_:
+: <select name="debug">
+  <?=mk_option($cfg['debug'], "false", _("Hide"))?>
+  <?=mk_option($cfg['debug'], "true", _("Show"))?>
+  </select>
+
+<input type="submit" name="#default" value="_(Default)_">
+: <input type="submit" name="#apply" value="_(Apply)_" disabled><input type="button" value="_(Done)_" onclick="done()">
+</form>
