@@ -30,7 +30,7 @@ $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 		];
 
 $cfg     = parse_plugin_cfg($plugin);
-$excluded_folders = $cfg['exclude'] ? array_map('trim',explode(',',$cfg['exclude'])) : [];
+$excluded_folders = $cfg['exclude'] ? array_map('trim',explode(',',rtrim($cfg['exclude'], ','))) : [];
 // $excluded_folders = array_map('addslash',$excluded_folders);
 
 #########################################################
