@@ -1,7 +1,7 @@
-Menu="Snapshots"
+Menu="Snapshots:11"
 Title="Debug ZFS"
 icon="fa-file"
-Cond="shell_exec('which zfs | grep zfs')"
+Cond="shell_exec('which zfs | grep zfs') && shell_exec('< /boot/config/plugins/snapshots/snapshots.cfg grep debug | grep true')"
 ---
 <?PHP
 /* Copyright 2020-2020, Simon Fairweather

@@ -1,4 +1,4 @@
-Menu="Snapshots"
+Menu="Snapshots:10"
 Title="Debug"
 icon="fa-file"
 Cond="shell_exec('< /boot/config/plugins/snapshots/snapshots.cfg grep debug | grep true')"

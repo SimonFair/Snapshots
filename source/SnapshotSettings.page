@@ -1,8 +1,8 @@
 Icon="fa-clone"
 Author="dcflachs"
-Title="Snapshots"
+Title="Settings"
 Type="xmenu"
-Menu="Utilities"
+Menu="Snapshots:20"
 ---
 <?php 
 $sName = "snapshots";

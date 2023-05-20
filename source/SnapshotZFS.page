@@ -1,4 +1,4 @@
-Menu="Snapshots"
+Menu="Snapshots:02"
 Title="ZFS Volumes"
 icon="fa-clone"
 Cond="shell_exec('which zfs | grep zfs')"
