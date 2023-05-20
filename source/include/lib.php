@@ -203,7 +203,7 @@ function get_subvol_schedule_json($sn,$seq=0) {
 	$config =  @json_decode(file_get_contents($config_file_json) , true);
 	#var_dump($config[$sn], $sn) ;
 	#return (isset($config[$sn])) ? html_entity_decode($config[$sn]) : FALSE;
-	return (isset($config[$sn][$seq])) ? $config[$sn][$seq] : FALSE;
+	return (isset($config[$sn][$seq])) ? $config[$sn][$seq] : array() ;
 }
 
 function get_subvol_schedule_slots($sn) {
@@ -211,7 +211,7 @@ function get_subvol_schedule_slots($sn) {
 	$config =  @json_decode(file_get_contents($config_file_json) , true);
 	#var_dump($config[$sn], $sn) ;
 	#return (isset($config[$sn])) ? html_entity_decode($config[$sn]) : FALSE;
-	return (isset($config[$sn])) ? $config[$sn] : FALSE;
+	return (isset($config[$sn])) ? $config[$sn] : array() ;
 }
 
 function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
@@ -295,7 +295,7 @@ function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
 			$rund="*" ;
 			break;	
 		}
-	#var_dump($val) ;
+
 	if($val['vmselection'] != "") $val['vmselection'] = implode("," , $val['vmselection']??[]) ;
 	$config[$sn][$schedule_seq] = $val ;
 
@@ -523,14 +523,14 @@ function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false){
 		$volume=$btrfs_list[$line] ;
 	    if (is_array($volume)) {
 			foreach ($volume as $vkey=>$vline) {
-				if ($volume["root"] == true) continue ;
+				if (isset($volume["root"]) && $volume["root"] == true) continue ;
 		
 
-				$puuid=$vline["puuid"] ;
-				$ruuid=$vline["ruuid"] ;
+				$puuid=$vline["puuid"] ?? null;
+				$ruuid=$vline["ruuid"] ?? null;
 
-				if ($parent = '-' && $ruuid != '-' && $vline["short_vol"] != "~INCREMENTAL") {
-						unset($btrfs_list[$line][$vline["path"]]) ;
+				if ($parent = '-' && $ruuid != '-' && $vline["short_vol"] ?? null != "~INCREMENTAL") {
+						if (isset($btrfs_list[$line][$vline["path"]]) ?? null) unset($btrfs_list[$line][$vline["path"]]) ;
 		
 					$subvol = "~RECIEVED" ; 
 					$incremental = NULL ;
@@ -538,16 +538,16 @@ function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false){
 		
 					$btrfs_list[$line][$subvol]["short_vol"] = "~RECEIVED" ;
 					 $btrfs_list[$line][$subvol]["subvolume"][$vline["short_vol"]] = [		
-					'uuid' =>$vline['uuid'],
-					'puuid' =>$vline['puuid'],
-					'ruuid' => $vline['ruuid'],
+					'uuid' =>$vline['uuid'] ?? null,
+					'puuid' =>$vline['puuid'] ?? null,
+					'ruuid' => $vline['ruuid'] ?? null,
 					'snap' => true,
-					'odate' => 	$vline['odate'],
-					'otime' => $vline['otime'],
+					'odate' => 	$vline['odate'] ?? null,
+					'otime' => $vline['otime'] ?? null,
 					'vol' => $line,
 					'incremental' => $incremental,
-					'property' => $vline["property"] ,
-					'path' => $vline["path"] ,
+					'property' => $vline["property"] ?? null,
+					'path' => $vline["path"] ?? null,
 					'parent' => $subvol 
 					  ];
 		
