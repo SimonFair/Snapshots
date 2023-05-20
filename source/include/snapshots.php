@@ -54,6 +54,7 @@ case 'sv2':
    $urlpath    =  $_GET['path'] ;
    $hideroot = $_POST['hideroot']=="true" ? false : true ;
    $hidedocker = $_POST['hidedocker']=="true" ? false : true ;
+   $hideexcluded = $_POST['hideexcluded']=="true" ? false : true ;
 
    $config_file = $GLOBALS["paths"]["subvol_settings"];
 	$volsettings = @parse_ini_file($config_file, true);
@@ -64,7 +65,7 @@ case 'sv2':
    echo "<tbody><tr>";
    exec(' df -t btrfs --output="target" ',$targetcli);
    $i=1 ;
-   $list=build_list3($targetcli,$hideroot,$hidedocker) ;
+   $list=build_list3($targetcli,$hideroot,$hidedocker,$hideexcluded) ;
             
             
    $ct = "<td title='"._("Remove Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;'  onclick='Create Subvolume(\"{$key}\")'><i class='fa fa-remove hdd'></a>";

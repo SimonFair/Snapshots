@@ -29,12 +29,31 @@ $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"subvol_schedule.json"	=> "/tmp/{$plugin}/config/subvolsch.cfg",
 		];
 
-		
+$cfg     = parse_plugin_cfg($plugin);
+$excluded_folders = $cfg['exclude'] ? array_map('trim',explode(',',$cfg['exclude'])) : [];
+// $excluded_folders = array_map('addslash',$excluded_folders);
+
 #########################################################
 #############        MISC FUNCTIONS        ##############
 #########################################################
 
+function addslash($thing) {
+    return rtrim($thing, '/') . '/';
+}
 
+function is_excluded($path) {
+	global $excluded_folders;
+
+	$path = addslash($path);
+
+	foreach ($excluded_folders as &$value) {
+		if(strpos($path, $value) !== false) {
+			return true;                
+		}
+	}
+
+	return false;
+}
 
 function is_ip($str) {
 	return filter_var($str, FILTER_VALIDATE_IP);
@@ -381,12 +400,10 @@ function get_snapshots($subvol){
 			}
 		}
 		return($btrfs_snaps_path) ;
-	}
-	
-	
+	}	
 
 
-function build_list3($lines,$hideroot=false,$hidedocker=false) {
+function build_list3($lines,$hideroot=false,$hidedocker=false,$hideexcluded=false) {
 	global $docker_path ;
 	$btrfs_list = array() ;
 	$btrfs_uuid = array() ;
@@ -398,21 +415,21 @@ function build_list3($lines,$hideroot=false,$hidedocker=false) {
 		$rc	= explode("\n", $s);
 		$btrfs_uuid[$rc[0]] = $line;
 		if ($hideroot==false) {
-		$btrfs_list[$line][$line] = [		
-		#	'uuid' =>$arrMatch['uuid'],
-		#	'puuid' =>$arrMatch['puuid'],
-		#	'ruuid' => $arrMatch['ruuid'],
-		'uuid' => $rc[0],
-		'puuid' => '-',
-		'ruuid' => '-',
-			'snap' => false,
-			'vol' => $line,
-			'path' => $line ,
-			'root' => true ,
-			'short_vol' => "/"
-			];	
-		
-}
+			$btrfs_list[$line][$line] = [		
+			#	'uuid' =>$arrMatch['uuid'],
+			#	'puuid' =>$arrMatch['puuid'],
+			#	'ruuid' => $arrMatch['ruuid'],
+			'uuid' => $rc[0],
+			'puuid' => '-',
+			'ruuid' => '-',
+				'snap' => false,
+				'vol' => $line,
+				'path' => $line ,
+				'root' => true ,
+				'short_vol' => "/"
+				];	
+			
+		}
 		
 		$vol=NULL ;
 
@@ -422,10 +439,12 @@ function build_list3($lines,$hideroot=false,$hidedocker=false) {
 		if ($vol != NULL) {
 			foreach ($vol as $vline) {
 
-			$docker_path = $docker_path = str_replace($line."/", "" ,$docker_path) ;
+				$docker_path = $docker_path = str_replace($line."/", "" ,$docker_path) ;
 				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>[\S\D]+)/', $vline, $arrMatch)) {
 					if (substr($arrMatch["path"] , 0, strlen($docker_path)) == $docker_path && $hidedocker == true) continue ;
 					$path=$line.'/'.$arrMatch["path"] ;
+					if (($hideexcluded == true) && is_excluded($path)) continue ;
+
 					$btrfs_list[$line][$path] = [		
 					'uuid' =>$arrMatch['uuid'],
 					'puuid' =>$arrMatch['puuid'],
@@ -456,14 +475,14 @@ function build_list3($lines,$hideroot=false,$hidedocker=false) {
 
 		}
 	;
-		$btrfs_list = process_subvolumes3($btrfs_list,$line,$btrfs_uuid,$hidedocker) ;
+		$btrfs_list = process_subvolumes3($btrfs_list,$line,$btrfs_uuid,$hidedocker,$hideexcluded) ;
 		$btrfs_list = process_received($btrfs_list,$line) ;
 	}
 	ksort($btrfs_list, SORT_NATURAL) ;
 return($btrfs_list) ;
 
 }
-function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false){
+function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false,$hideexcluded=false){
 	global $docker_path ;
 	# Process Snapshots
 	#
@@ -477,8 +496,9 @@ function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false){
 	
 			if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} otime (?P<odate>\S+) (?P<otime>\S+) parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
 				if (substr($arrMatch["path"] , 0, strlen($docker_path)) == $docker_path && $hidedocker == true) continue ;
-	
-				 unset(  $btrfs_list[$line][$line.'/'.$arrMatch["path"]] );
+				if (($hideexcluded == true) && is_excluded($line.'/'.$arrMatch["path"])) continue ;
+
+				unset(  $btrfs_list[$line][$line.'/'.$arrMatch["path"]] );
 	
 				$subvol = $uuid[$arrMatch['puuid']] ;
 				$ruuid =  $arrMatch['ruuid'] ;
