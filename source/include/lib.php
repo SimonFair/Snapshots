@@ -316,7 +316,7 @@ function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
 		}
 	#var_dump($val) ;
 	if (is_array($val['vmselection'])) $val['vmselection'] = implode("," , $val['vmselection']) ;
-	var_dump($val['vmselection']) ;
+	#var_dump($val['vmselection']) ;
 	$config[$sn][$schedule_seq] = $val ;
 
 	save_json_file($config_file_json, $config) ;
