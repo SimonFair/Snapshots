@@ -31,7 +31,7 @@ $libvirt_up        = $libvirt_running=='yes';
 if ($libvirt_up)  $_SESSION['availablevms'] = $lv->get_domains(); else $_SESSION['availablevms'] = array() ;
 if (isset($_GET['s'])) {
 	$serial = $_GET['s'];
-  	$seq = $_GET['seq'];
+  $seq = $_GET['seq'];
 	$width = "50%";
 #$subvolsch = get_subvol_schedule($serial);
 $subvolsch = get_subvol_schedule_json($serial,$seq);
@@ -50,7 +50,7 @@ if (count($_POST)) {
 	if ($_POST['#apply'] == "_(Apply)_") {
 		array_map(function($k, $v) use (&$cfg) { if($k[0] != "#") $cfg[$k] = $v; }, array_keys($_POST), $_POST );
 		snap_manager_log("Updating snapshot settings...");
-  #  var_dump($cfg) ;  
+    #var_dump($cfg) ;  
 		#set_subvol_schedule($serial, $cfg);
     $seq=set_subvol_schedule_json($serial, $cfg ,$seq);
 		snap_manager_log("snapshot settings updated.");
@@ -300,6 +300,7 @@ _(Snap Send )_:
 _(VM options)_:
 
 : <select id="hostshutdown" name="hostoption">
+  <?=mk_option($subvolsch['hostoption'], 'disabled', _('Disabled'))?>
   <?=mk_option($subvolsch['hostoption'], 'shutdown', _('Shutdown VMs'))?>
   <?=mk_option($subvolsch['hostoption'], 'hibernate', _('Hibernate VMs'))?>
   <?=mk_option($subvolsch['hostoption'], 'suspend', _('Suspend VMs'))?>

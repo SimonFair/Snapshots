@@ -128,6 +128,8 @@ foreach($vms as $vm) {
 			exec ('virsh dompmsuspend "'.$vm.'" disk'." 2>&1", $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_output[0]." Being Hibernated");
 			break ;
+		default:
+			break ;
 		}				
 
 	}
@@ -245,6 +247,8 @@ if ($vms_running) {
 		case "hibernate":
 			exec ('virsh start "'.$vm.'"'." 2>&1", $vm_output) ;
 			if ($logging == "yes") snap_manager_log("VM ".$vm.' State is :'.$vm_state[$vm]." Being Woken");
+			break ;
+		default:
 			break ;
 		}				
  }	

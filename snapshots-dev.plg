@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "snapshots">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2023.06.10a">
+<!ENTITY version   "2023.06.30">
 <!ENTITY launch    "Tools/Snapshots">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/Snapshots/main">
 <!ENTITY pluginURL "&gitURL;/snapshots.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/114600-plugin-snapshots/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"562e305820f4a82842ff83b295a5acee">
+<!ENTITY md5		"6d480799f1a3fa668790091819f9468f">
 ]>
 
 <PLUGIN name="&name;"
@@ -26,6 +26,7 @@
 ###&version;
 
   - Add Settings page and exclusion option from PR by primeval_god thanks.
+  - Add Disable options for VM Actions.
 
 2022.12.25
 
