@@ -48,9 +48,9 @@ $version = parse_ini_file("/etc/unraid-version");
 
 if (count($_POST)) {
 	if ($_POST['#apply'] == "_(Apply)_") {
+    $cfg['vmselection'] = "" ;
 		array_map(function($k, $v) use (&$cfg) { if($k[0] != "#") $cfg[$k] = $v; }, array_keys($_POST), $_POST );
-		snap_manager_log("Updating snapshot settings...");
-    #var_dump($cfg) ;  
+		snap_manager_log("Updating snapshot settings..."); 
 		#set_subvol_schedule($serial, $cfg);
     $seq=set_subvol_schedule_json($serial, $cfg ,$seq);
 		snap_manager_log("snapshot settings updated.");
@@ -89,12 +89,7 @@ function path_selected2() {
   document.getElementById("subvolsendto").value = share2;
 }
 
-
-
 </script>
-
-
-
 
 <script>
 <? if ($setup == true):?>
@@ -280,7 +275,7 @@ _(Snap Send )_:
 > Defined the master SNAP, if left to previous will take the last back as the master. This must exist on the remote end.
 
  Virtual Machine
-:   <select id="vmselection" class="input.description" name="vmselection[]" multiple="multiple" style="display">
+:   <select id="vmselection"  name="vmselection[]" multiple="multiple" style="display" >
    
       <?php
 	 	$output = $_SESSION['availablevms'];
