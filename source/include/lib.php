@@ -253,7 +253,7 @@ function set_subvol_schedule_json($sn, $val, $schedule_seq=0) {
 	if ($schedule_seq == "99")
 	{
 		$slots=  get_subvol_schedule_slots($sn) ;
-		ksort($slots) ;
+		if (is_array($slots)) ksort($slots) ;
 		foreach ($slots as $slotseq=>$slot) {
 			if ($slotseq == $seq_count ) {
 				 $seq_count++; 
@@ -596,7 +596,8 @@ function subvol_parents() {
 			foreach ($vol as $vline) {
 
 				if (preg_match('/^ID \d{1,25} gen \d{1,25} cgen \d{1,25} parent \d{1,25} top level \d{1,25} parent_uuid (?P<puuid>\S+) * received_uuid (?P<ruuid>\S+) * uuid (?P<uuid>\S+) path (?P<path>\S+)/', $vline, $arrMatch)) {
-                    $key=$line.'/'.$arrMatch["path"] ;
+					$path = str_replace("<FS_TREE>/","",$arrMatch["path"]) ;
+                    $key=$line.'/'.$path ;
 					$btrfs_list[$key] = [		
 					'vol' => $line,
 						];
