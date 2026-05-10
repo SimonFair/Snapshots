@@ -308,9 +308,12 @@ function removeSnapshot() {
 
 	function get_tab_title_by_name(name) {
 		var tab		= $("input[name$=tabs] + label").filter(function(){return $(this).text() === name;}).prev();
+		var btab	= $('button[role="tab"]'		).filter(function(){return $(this).text().trim() === name;});
 		var title	= $("div#title > span.left"		).filter(function(){return $(this).text() === name;}).parent();
 		if (tab.length) {
 			return tab
+		} else if (btab.length) {
+			return btab
 		} else if (title.length) {
 			return title
 		} else {
@@ -374,6 +377,39 @@ function removeSnapshot() {
 					$(this).bind({click:function()
 					{
 						$('#'+elementId).fadeOut('slow');}
+					});
+				}
+			});
+		}
+		else if (Target.prop('nodeName') === "BUTTON")
+		{
+			element.css("display","none");
+
+			if (Append)
+			{
+				$('.tabs').append(element);
+			}
+			else
+			{
+				$('.tabs').prepend(element);
+			}
+
+			Target.on('click', function()
+			{
+				$('#'+elementId).fadeIn('slow');
+			});
+
+			if (Target.attr('aria-selected') === 'true' || ! autoHide) {
+				$('#'+elementId).fadeIn('slow');
+			}
+
+			$('button[role="tab"]').each(function()
+			{
+				if (! $(this).is(Target) && autoHide)
+				{
+					$(this).on('click', function()
+					{
+						$('#'+elementId).fadeOut('slow');
 					});
 				}
 			});

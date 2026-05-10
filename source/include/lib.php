@@ -503,16 +503,19 @@ function process_subvolumes3($btrfs_list,$line, $uuid, $hidedocker=false,$hideex
 	
 				$subvol = $uuid[$arrMatch['puuid']] ;
 				$ruuid =  $arrMatch['ruuid'] ;
-				if ($subvol == NULL) $subvol = "~NONE" ; 
+				if ($subvol == NULL) $subvol = "~NONE" ;
 				if ($ruuid != "-" ) {
 					$incremental = $subvol ;
 					$subvol = "~INCREMENTAL" ;
 					$btrfs_list[$line][$subvol]["short_vol"] = $subvol ;
 				} else { $incremental = NULL ;}
-	
-			
-				
-				 $btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = [		
+
+				/* Skip if the parent subvol entry was not built (e.g. root subvol hidden by hideroot=true).
+				   Otherwise auto-vivification creates a stub without short_vol/vol/path, which the renderer
+				   turns into a broken "SubVolume: /" row. */
+				if ($subvol[0] === '/' && !isset($btrfs_list[$line][$subvol])) continue ;
+
+				 $btrfs_list[$line][$subvol]["subvolume"][$arrMatch["path"]] = [
 				'uuid' =>$arrMatch['uuid'],
 				'puuid' =>$arrMatch['puuid'],
 				'ruuid' => $arrMatch['ruuid'],
